@@ -9,7 +9,8 @@ repos:
     rev: v0.2.0
     hooks:
       - id: ruff
-        args: [--fix]
+        args:
+          - "--fix"
 
   - repo: https://github.com/psf/black
     rev: 24.1.1
@@ -21,7 +22,8 @@ repos:
     rev: v0.3.9
     hooks:
     - id: blackdoc
-      additional_dependencies: ["black[jupyter]"]
+      additional_dependencies:
+        - "black[jupyter]"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
@@ -29,9 +31,17 @@ repos:
     - id: mypy
       exclude: tests
 
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
     hooks:
     - id: codespell
-      types_or: [python, markdown]
-      additional_dependencies: [tomli]
+      types_or:
+        - python
+        - markdown
+      additional_dependencies:
+        - tomli

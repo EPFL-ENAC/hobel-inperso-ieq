@@ -1,4 +1,4 @@
-from hobel-inperso-ieq.foo import bar
+from inperso.foo import bar
 
 
 def test_bar():
