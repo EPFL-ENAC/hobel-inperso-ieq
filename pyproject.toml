@@ -7,7 +7,7 @@ name = "hobel-inperso-ieq"
 version = "0.0.1"
 authors = [{name = "ENAC-IT4R"}]
 
-description =  "The project aims to advance the knowledge of indoor environmental quality (IEQ) assessment in residential and educational buildings in Europe, develop an improved rating system for IEQ assessment, and understand the impact of building retrofits on Indoor environmental quality and occupants’ comfort."
+description = "The project aims to advance the knowledge of indoor environmental quality (IEQ) assessment in residential and educational buildings in Europe, develop an improved rating system for IEQ assessment, and understand the impact of building retrofits on Indoor environmental quality and occupants’ comfort."
 readme = "README.md"
 keywords = ["python"]
 classifiers = [
@@ -20,10 +20,9 @@ classifiers = [
 ]
 
 # Environment settings
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
 	"click",
-	
 ]
 
 
@@ -33,9 +32,6 @@ dev = [
 	"pytest",
 	"pytest-cov",
 	"pytest-mock",
-	"black==22.8.0",
-	"ruff==0.0.257",
-	"mypy",
 	"sphinx",
 	"sphinx_rtd_theme",
 	"nbsphinx",
@@ -75,7 +71,7 @@ addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 5"
 # Type checking
 [tool.mypy]
 # Specify the Python version you are using
-python_version = "3.10"
+python_version = "3.9"
 # avoid folder
 # Exclude specific files or directories from type checking
 # Example:
@@ -108,3 +104,6 @@ extensions = [
 	"sphinx.ext.autosummary",
 ]
 html_theme = "sphinx_rtd_theme"
+
+[tool.codespell]
+ignore-words-list = ""
