@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  frontend:
+    environment: {}
+    image: grafana/grafana-enterprise
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - grafana_storage:/var/lib/grafana
+
+volumes:
+  grafana_storage: {}
