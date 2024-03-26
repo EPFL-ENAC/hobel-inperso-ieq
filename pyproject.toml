@@ -42,8 +42,12 @@ style = "semver"
 files = [
 	"hobel_inperso_ieq/__init__.py",
 ]
+
 [tool.pytest.ini_options]
 addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 5"
+
+[tool.poetry.scripts]
+inperso-retrieve = "inperso.data_acquisition.retrieve:main"
 
 [tool.ruff]
 line-length = 120

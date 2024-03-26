@@ -30,6 +30,23 @@ pip install -e .[dev]
 ```
 
 
+# 🏎 Usage
+
+Export the following environment variables:
+
+- `AIRLY_API_KEY`
+- `AIRTHINGS_API_ID`
+- `AIRTHINGS_API_KEY`
+- `UHOO_CLIENT_ID`
+- `INFLUX_TOKEN`
+
+Then, run
+
+```
+inperso-retrieve
+```
+
+
 # ✅ Run tests
 
 ```
