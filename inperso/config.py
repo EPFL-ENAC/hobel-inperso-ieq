@@ -1,3 +1,5 @@
+"""Load the configuration and read the environment variables."""
+
 import os
 
 from inperso.utils import load_yaml, update_dict_nested

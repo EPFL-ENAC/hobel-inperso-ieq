@@ -1,5 +1,17 @@
 import requests
 
+from inperso.data_acquisition.retriever import Retriever
+
+
+class UhooRetriever(Retriever):
+    def retrieve(self):
+        # TODO
+        pass
+
+    def get_line_queries(self):
+        # TODO
+        pass
+
 
 def get_token(client_id: str) -> str:
     # Equivalent command: curl --location 'https://api.uhooinc.com/v1/generatetoken' --data-urlencode 'code=xxxxxxxx'
