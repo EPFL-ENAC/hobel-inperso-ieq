@@ -1,0 +1,9 @@
+db:
+  host: localhost
+  port: 8086
+  org: enac
+  bucket: bucket
+
+from_env:
+  db:
+    token: INFLUX_TOKEN
