@@ -1,13 +1,8 @@
 from influxdb_client import InfluxDBClient
 
-from inperso.config import db
+from inperso import config
 
-
-client = InfluxDBClient(
-    url=db["url"],
-    token=db["token"],
-    org=db["org"]
-)
+client = InfluxDBClient(url=config.db["url"], token=config.db["token"], org=config.db["org"])
 
 
 write_api = client.write_api()

@@ -46,6 +46,11 @@ config = add_env_variables_to_config(config)
 
 
 # Database configuration
-
 db = config["db"]
 db["url"] = f"http://{db['host']}:{db['port']}"
+
+
+# APIs configuration
+airly = config["airly"]
+airthings = config["airthings"]
+uhoo = config["uhoo"]

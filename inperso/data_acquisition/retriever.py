@@ -1,21 +1,56 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from datetime import datetime
 
 
 class Retriever(ABC):
-    def __init__(self):
+    def __init__(self) -> None:
         """Container for retrieving data from a source and storing it in the database."""
 
-        self.data: Optional[dict] = None
+        self.data: dict = {}
+
+    def fetch(
+        self,
+        datetime_start: datetime,
+        datetime_end: datetime,
+    ) -> None:
+        """Retrieve data and store it in the object."""
+
+        self._check_datetimes(
+            datetime_start=datetime_start,
+            datetime_end=datetime_end,
+        )
+
+        self.data = self._fetch(
+            datetime_start=datetime_start,
+            datetime_end=datetime_end,
+        )
+
+    def _check_datetimes(
+        self,
+        datetime_start: datetime,
+        datetime_end: datetime,
+    ) -> None:
+        """Check that the datetimes are valid for the source.
+
+        Raises:
+            ValueError: if the datetimes are invalid.
+        """
+
+        if datetime_end <= datetime_start:
+            raise ValueError("datetime_end must be greater than datetime_start")
 
     @abstractmethod
-    def retrieve(self):
-        pass
+    def _fetch(
+        self,
+        datetime_start: datetime,
+        datetime_end: datetime,
+    ) -> dict:
+        """Retrieve data from the source and return it."""
 
     @abstractmethod
-    def get_line_queries(self):
-        pass
+    def _get_line_queries(self) -> list[str]:
+        """Get line queries from stored data dictionary."""
 
-    def store(self):
+    def store(self) -> None:
         # TODO
         raise NotImplementedError()

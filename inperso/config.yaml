@@ -5,5 +5,15 @@ db:
   bucket: bucket
 
 from_env:
+  airly:
+    api_key: AIRLY_API_KEY
+
+  airthings:
+    api_id: AIRTHINGS_API_ID
+    api_key: AIRTHINGS_API_KEY
+
   db:
     token: INFLUX_TOKEN
+
+  uhoo:
+    client_id: UHOO_CLIENT_ID
