@@ -645,9 +645,9 @@ docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2)", "sphinx-
 test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
 
 [extras]
-dev = ["pre-commit", "pytest", "pytest-cov", "pytest-mock"]
+dev = ["pre-commit", "pytest", "pytest-cov", "pytest-mock", "types-pyyaml", "types-requests"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f72727b00ba3918195022a4b1ea215b5e933f69d2bbf24203a15fae448aedfd4"
+content-hash = "bdd727a1e3585ad1639e9fa483655a6b9d01fc2d1836dce5d50046e40a130209"
