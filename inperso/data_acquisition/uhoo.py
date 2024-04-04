@@ -37,6 +37,7 @@ class UhooRetriever(Retriever):
             device_mac = device["macAddress"]
 
             try:
+                logging.info(f"Getting Uhoo device data for {device_name} ({device_mac})")
                 device_data = get_device_data(token, device_mac, datetime_start, datetime_end)
 
             except RuntimeError:
@@ -49,7 +50,7 @@ class UhooRetriever(Retriever):
 
         return data
 
-    def _get_line_queries(self) -> list[str]:
+    def _get_line_queries(self) -> list[dict]:
         """Get line queries from stored data dictionary."""
 
         queries = []
@@ -58,15 +59,14 @@ class UhooRetriever(Retriever):
             for entry in device_data:
                 fields = entry.copy()
                 timestamp = fields.pop("timestamp")
+                fields = ints_to_floats(fields)
 
-                queries.append(
-                    format_line_query(
-                        measurement="uhoo",
-                        tags={"device": device_name},
-                        fields=fields,
-                        timestamp=timestamp,
-                    )
-                )
+                queries.append({
+                    "measurement": "uhoo",
+                    "tags": {"device": device_name.replace(" ", "_")},
+                    "fields": fields,
+                    "time": timestamp,
+                })
 
         return queries
 
@@ -123,8 +123,6 @@ def get_device_data(
     datetime_start and datetime_end must span at most 1 hour.
     """
 
-    logging.info(f"Getting Uhoo device data for {device_mac}")
-
     timestamp_start = int(datetime_start.timestamp())
     timestamp_end = int(datetime_end.timestamp())
 
@@ -153,15 +151,7 @@ def get_device_data(
     return response.json()
 
 
-def format_line_query(
-    measurement: str,
-    tags: dict,
-    fields: dict,
-    timestamp: int,
-) -> str:
-    """Format a line query for InfluxDB."""
+def ints_to_floats(dictionary: dict) -> dict:
+    """Convert all integers in a dictionary to floats."""
 
-    tags_str = ",".join([f"{key}={value}".replace(" ", "_") for key, value in tags.items()])
-    fields_str = ",".join([f"{key}={value}".replace(" ", "_") for key, value in fields.items()])
-
-    return f"{measurement},{tags_str} {fields_str} {timestamp}"
+    return {key: float(value) if isinstance(value, int) else value for key, value in dictionary.items()}

@@ -12,7 +12,7 @@ class AirthingsRetriever(Retriever):
         """Retrieve data from the source and return it."""
         raise NotImplementedError()
 
-    def _get_line_queries(self) -> list[str]:
+    def _get_line_queries(self) -> list[dict]:
         """Get line queries from stored data dictionary."""
         raise NotImplementedError()
 

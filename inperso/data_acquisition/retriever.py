@@ -1,5 +1,8 @@
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
+
+from inperso.data_acquisition.write import write
 
 
 class Retriever(ABC):
@@ -48,9 +51,10 @@ class Retriever(ABC):
         """Retrieve data from the source and return it."""
 
     @abstractmethod
-    def _get_line_queries(self) -> list[str]:
+    def _get_line_queries(self) -> list[dict]:
         """Get line queries from stored data dictionary."""
 
     def store(self) -> None:
-        # TODO
-        raise NotImplementedError()
+        queries = self._get_line_queries()
+        logging.info(f"Writing {len(queries)} entries to the database.")
+        write(queries)
