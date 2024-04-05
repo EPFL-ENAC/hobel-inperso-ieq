@@ -19,3 +19,9 @@ def update_dict_nested(target: dict, update: dict) -> dict:
             target[key] = value
 
     return target
+
+
+def dict_ints_to_floats(dictionary: dict) -> dict:
+    """Convert all integers in a dictionary to floats."""
+
+    return {key: float(value) if isinstance(value, int) else value for key, value in dictionary.items()}

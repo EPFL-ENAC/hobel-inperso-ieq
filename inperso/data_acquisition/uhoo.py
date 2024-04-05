@@ -5,6 +5,7 @@ import requests
 
 from inperso import config
 from inperso.data_acquisition.retriever import Retriever
+from inperso.utils import dict_ints_to_floats
 
 
 class UhooRetriever(Retriever):
@@ -59,7 +60,7 @@ class UhooRetriever(Retriever):
             for entry in device_data:
                 fields = entry.copy()
                 timestamp = fields.pop("timestamp")
-                fields = ints_to_floats(fields)
+                fields = dict_ints_to_floats(fields)
 
                 queries.append({
                     "measurement": "uhoo",
@@ -99,8 +100,8 @@ def get_device_list(access_token: str) -> list:
     logging.info("Getting Uhoo device list")
 
     url = "https://api.uhooinc.com/v1/devicelist"
-    header = {"Authorization": f"Bearer {access_token}"}
-    response = requests.get(url, headers=header)
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
         message = f"Failed to get device list: Response {response.status_code} - {response.text}"
@@ -127,14 +128,14 @@ def get_device_data(
     timestamp_end = int(datetime_end.timestamp())
 
     url = "https://api.uhooinc.com/v1/devicedata"
-    header = {"Authorization": f"Bearer {access_token}"}
+    headers = {"Authorization": f"Bearer {access_token}"}
     data = {
         "macAddress": device_mac,
         "mode": "minute",
         "timestampStart": timestamp_start,
         "timestampEnd": timestamp_end,
     }
-    response = requests.post(url, headers=header, data=data)
+    response = requests.post(url, headers=headers, data=data)
 
     if response.status_code == 404:  # No data available
         logging.warning(f"No data available for {device_mac}")
@@ -149,9 +150,3 @@ def get_device_data(
         # 403: expired token
 
     return response.json()
-
-
-def ints_to_floats(dictionary: dict) -> dict:
-    """Convert all integers in a dictionary to floats."""
-
-    return {key: float(value) if isinstance(value, int) else value for key, value in dictionary.items()}
