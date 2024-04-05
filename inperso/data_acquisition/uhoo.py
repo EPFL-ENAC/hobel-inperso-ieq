@@ -26,12 +26,31 @@ class UhooRetriever(Retriever):
         datetime_start: datetime,
         datetime_end: datetime,
     ) -> dict:
-        """Retrieve data from the source and return it."""
+        """Retrieve data from the source and return it.
+
+        Returns a dictionary with the following structure: {
+            "device_name": {
+                "data": [
+                    {
+                        "timestamp": datetime,
+                        "field1": value1,
+                        "field2": value2,
+                        ...
+                    },
+                    ...
+                ],
+                "location": str,
+                "floor": int,
+            },
+            ...
+        }
+        """
 
         token = get_token(config.uhoo["client_id"])
         devices = get_device_list(token)
 
         data = {}
+        logging.info(f"Found {len(devices)} devices")
 
         for device in devices:
             device_name = device["deviceName"]
@@ -47,7 +66,14 @@ class UhooRetriever(Retriever):
             if device_data == {}:
                 continue
 
-            data[device_name] = device_data["data"]
+            device_location = device["roomName"]
+            device_floor = device["floorNumber"]
+
+            data[device_name] = {
+                "data": device_data["data"],
+                "location": device_location,
+                "floor": device_floor,
+            }
 
         return data
 
@@ -56,7 +82,11 @@ class UhooRetriever(Retriever):
 
         queries = []
 
-        for device_name, device_data in self.data.items():
+        for device_name, device_info in self.data.items():
+            device_data = device_info["data"]
+            device_location = device_info["location"]
+            device_floor = device_info["floor"]
+
             for entry in device_data:
                 fields = entry.copy()
                 timestamp = fields.pop("timestamp")
@@ -64,7 +94,11 @@ class UhooRetriever(Retriever):
 
                 queries.append({
                     "measurement": "uhoo",
-                    "tags": {"device": device_name.replace(" ", "_")},
+                    "tags": {
+                        "device": device_name.replace(" ", "_"),
+                        "location": device_location.replace(" ", "_"),
+                        "floor": device_floor,
+                    },
                     "fields": fields,
                     "time": timestamp,
                 })
@@ -118,10 +152,21 @@ def get_device_data(
     device_mac: str,
     datetime_start: datetime,
     datetime_end: datetime,
-) -> dict:
+) -> dict[str, list[dict]]:
     """Get the data of one device.
 
     datetime_start and datetime_end must span at most 1 hour.
+    Returns {} or a dictionary with the following structure: {
+        "data": [
+            {
+                "timestamp": datetime,
+                "field1": value1,
+                "field2": value2,
+                ...
+            },
+            ...
+        ],
+    }
     """
 
     timestamp_start = int(datetime_start.timestamp())
