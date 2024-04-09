@@ -101,9 +101,9 @@ class AirthingsRetriever(Retriever):
                 queries.append({
                     "measurement": "airthings",
                     "tags": {
-                        "device": device_name.replace(" ", "_"),
-                        "type": device_type.replace(" ", "_"),
-                        "location": device_location.replace(" ", "_"),
+                        "device": device_name,
+                        "type": device_type,
+                        "location": device_location,
                     },
                     "fields": fields,
                     "time": timestamp,
@@ -166,10 +166,10 @@ def get_device_list(access_token: str, account_id: str) -> list[dict]:
 
     url = api_url + "devices"
     headers = {"Authorization": f"Bearer {access_token}"}
-    data = {
+    params = {
         "accountId": account_id,
     }
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, params=params)
 
     if response.status_code != 200:
         message = f"Failed to get device list: Response {response.status_code} - {response.text}"

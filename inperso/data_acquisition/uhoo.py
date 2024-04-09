@@ -95,8 +95,8 @@ class UhooRetriever(Retriever):
                 queries.append({
                     "measurement": "uhoo",
                     "tags": {
-                        "device": device_name.replace(" ", "_"),
-                        "location": device_location.replace(" ", "_"),
+                        "device": device_name,
+                        "location": device_location,
                         "floor": device_floor,
                     },
                     "fields": fields,
