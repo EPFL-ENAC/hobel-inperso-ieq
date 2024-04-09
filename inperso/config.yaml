@@ -1,3 +1,6 @@
+airly:
+  sponsor_name: "École polytechnique fédérale de Lausanne"
+
 db:
   host: localhost
   port: 8086

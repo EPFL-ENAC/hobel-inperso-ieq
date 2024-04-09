@@ -52,12 +52,16 @@ class AirthingsRetriever(Retriever):
             for device in device_list:
                 device_id = device["id"]
 
-                device_data = get_device_samples(
-                    access_token=token,
-                    device_id=device_id,
-                    datetime_start=datetime_start,
-                    datetime_end=datetime_end,
-                )
+                try:
+                    device_data = get_device_samples(
+                        access_token=token,
+                        device_id=device_id,
+                        datetime_start=datetime_start,
+                        datetime_end=datetime_end,
+                    )
+                except Exception as e:
+                    logging.error(f"Failed to get data for device {device_id}: {e}")
+                    continue
 
                 device_name = device["segment"]["name"]
                 device_type = device["deviceType"]
