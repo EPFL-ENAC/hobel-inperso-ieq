@@ -78,8 +78,8 @@ class AirlyRetriever(Retriever):
 
         for installation_id, infos in self.data.items():
             city = infos["city"]
-            latitude = infos["latitude"]
-            longitude = infos["longitude"]
+            # latitude = infos["latitude"]
+            # longitude = infos["longitude"]
             measurements = infos["data"]
 
             for measurement in measurements:
@@ -97,10 +97,10 @@ class AirlyRetriever(Retriever):
                 queries.append({
                     "measurement": "airly",
                     "tags": {
-                        "installation_id": installation_id,
-                        "city": city,
-                        "latitude": latitude,
-                        "longitude": longitude,
+                        "device": installation_id,
+                        "location": city,
+                        # "latitude": latitude,
+                        # "longitude": longitude,
                     },
                     "fields": fields,
                     "time": midpoint_datetime,
