@@ -53,4 +53,5 @@ db["url"] = f"http://{db['host']}:{db['port']}"
 # APIs configuration
 airly = config["airly"]
 airthings = config["airthings"]
+qualtrics = config["qualtrics"]
 uhoo = config["uhoo"]
