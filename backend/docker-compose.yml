@@ -25,8 +25,8 @@ services:
       - 8086:8086
     restart: unless-stopped
     volumes:
-      - influxdb:/var/lib/influxdb3
+      - influxdb:/var/lib/influxdb2
 
 volumes:
-  grafana: {}
-  influxdb: {}
+  grafana:
+  influxdb:
