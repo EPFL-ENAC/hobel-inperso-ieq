@@ -42,44 +42,34 @@ class AirthingsRetriever(Retriever):
         """
 
         token = get_token(config.airthings["api_id"], config.airthings["api_key"])
-        account_list = get_account_list(token)
+        device_list = get_device_list(token)
+        logging.info(f"Found {len(device_list)} Airthings devices.")
 
-        if len(account_list) == 0:
-            logging.warning("No Airthings accounts found.")
-            return {}
-
-        logging.info(f"Found {len(account_list)} Airthings accounts.")
         data = {}
 
-        for account in account_list:
-            account_id = account["id"]
+        for device in device_list:
+            device_id = device["id"]
 
-            device_list = get_device_list(token, account_id)
-            logging.info(f"Found {len(device_list)} devices in account {account_id}.")
+            try:
+                device_data = get_device_samples(
+                    access_token=token,
+                    device_id=device_id,
+                    datetime_start=datetime_start,
+                    datetime_end=datetime_end,
+                )
+            except Exception as e:
+                logging.error(f"Failed to get data for device {device_id}: {e}")
+                continue
 
-            for device in device_list:
-                device_id = device["id"]
+            device_name = device["segment"]["name"]
+            device_type = device["deviceType"]
+            device_location = device["location"]["name"]
 
-                try:
-                    device_data = get_device_samples(
-                        access_token=token,
-                        device_id=device_id,
-                        datetime_start=datetime_start,
-                        datetime_end=datetime_end,
-                    )
-                except Exception as e:
-                    logging.error(f"Failed to get data for device {device_id}: {e}")
-                    continue
-
-                device_name = device["segment"]["name"]
-                device_type = device["deviceType"]
-                device_location = device["location"]["name"]
-
-                data[device_name] = {
-                    "data": device_data,
-                    "type": device_type,
-                    "location": device_location,
-                }
+            data[device_name] = {
+                "data": device_data,
+                "type": device_type,
+                "location": device_location,
+            }
 
         return data
 
@@ -147,30 +137,7 @@ def get_token(client_id: str, client_secret: str) -> str:
     return access_token  # type: ignore
 
 
-def get_account_list(access_token: str) -> list[dict]:
-    """Get account list from Airthings API.
-
-    Returns a list of dictionaries with the keys:
-        - id: str
-        - name: str
-    """
-
-    url = api_url + "accounts"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = requests.get(url, headers=headers)
-
-    if response.status_code != 200:
-        message = f"Failed to get account list: Response {response.status_code} - {response.text}"
-        logging.error(message)
-        raise RuntimeError(message)
-
-    data = response.json()
-    account_list = data["accounts"]
-
-    return account_list
-
-
-def get_device_list(access_token: str, account_id: str) -> list[dict]:
+def get_device_list(access_token: str) -> list[dict]:
     """Get device list from Airthings API.
 
     Returns a list of dictionaries with the keys:
@@ -178,10 +145,7 @@ def get_device_list(access_token: str, account_id: str) -> list[dict]:
 
     url = api_url + "devices"
     headers = {"Authorization": f"Bearer {access_token}"}
-    params = {
-        "accountId": account_id,
-    }
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
         message = f"Failed to get device list: Response {response.status_code} - {response.text}"

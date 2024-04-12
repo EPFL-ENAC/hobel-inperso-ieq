@@ -9,7 +9,7 @@ The project aims to advance the knowledge of indoor environmental quality (IEQ)
 
 ## Requirements
 
-- Python 3.9 minimum
+- Python 3.10 minimum
 
 
 ## For users
