@@ -3,7 +3,7 @@ import json
 import logging
 import time
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 import requests
@@ -15,6 +15,14 @@ api_url = "https://sjc1.qualtrics.com/API/v3/"
 
 
 class QualtricsRetriever(Retriever):
+    @property
+    def _measurement_name(self) -> str:
+        return "qualtrics"
+
+    @property
+    def _fetch_interval(self) -> timedelta:
+        return timedelta(hours=config.qualtrics["fetch_interval_hours"])
+
     def _fetch(
         self,
         datetime_start: datetime,
@@ -86,7 +94,7 @@ class QualtricsRetriever(Retriever):
                 tags["longitude"] = float(data["locationLongitude"])
 
             queries.append({
-                "measurement": "qualtrics",
+                "measurement": self._measurement_name,
                 "tags": tags,
                 "fields": answers,
                 "time": date,

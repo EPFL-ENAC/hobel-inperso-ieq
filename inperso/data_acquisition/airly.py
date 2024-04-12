@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
@@ -11,6 +11,14 @@ api_url = "https://airapi.airly.eu/v2/"
 
 
 class AirlyRetriever(Retriever):
+    @property
+    def _measurement_name(self) -> str:
+        return "airly"
+
+    @property
+    def _fetch_interval(self) -> timedelta:
+        return timedelta(hours=config.airly["fetch_interval_hours"])
+
     def _fetch(
         self,
         datetime_start: datetime,
@@ -95,7 +103,7 @@ class AirlyRetriever(Retriever):
 
                 fields = dict_ints_to_floats(fields)
                 queries.append({
-                    "measurement": "airly",
+                    "measurement": self._measurement_name,
                     "tags": {
                         "device": installation_id,
                         "location": city,

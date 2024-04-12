@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 import requests
@@ -13,6 +13,14 @@ api_url = "https://ext-api.airthings.com/v1/"
 
 
 class AirthingsRetriever(Retriever):
+    @property
+    def _measurement_name(self) -> str:
+        return "airthings"
+
+    @property
+    def _fetch_interval(self) -> timedelta:
+        return timedelta(hours=config.airthings["fetch_interval_hours"])
+
     def _fetch(
         self,
         datetime_start: datetime,
@@ -103,7 +111,7 @@ class AirthingsRetriever(Retriever):
                 fields = dict_ints_to_floats(fields)
 
                 queries.append({
-                    "measurement": "airthings",
+                    "measurement": self._measurement_name,
                     "tags": {
                         "device": device_name,
                         "type": device_type,

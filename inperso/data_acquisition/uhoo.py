@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 
@@ -9,17 +9,13 @@ from inperso.utils import dict_ints_to_floats
 
 
 class UhooRetriever(Retriever):
-    def _check_datetimes(
-        self,
-        datetime_start: datetime,
-        datetime_end: datetime,
-    ) -> None:
-        """Check that the datetimes are valid and span at most 1 hour."""
+    @property
+    def _measurement_name(self) -> str:
+        return "uhoo"
 
-        super()._check_datetimes(datetime_start, datetime_end)
-
-        if (datetime_end - datetime_start).seconds > 3600:
-            raise ValueError("The interval spans more than 1 hour.")
+    @property
+    def _fetch_interval(self) -> timedelta:
+        return timedelta(hours=config.uhoo["fetch_interval_hours"])
 
     def _fetch(
         self,
@@ -93,7 +89,7 @@ class UhooRetriever(Retriever):
                 fields = dict_ints_to_floats(fields)
 
                 queries.append({
-                    "measurement": "uhoo",
+                    "measurement": self._measurement_name,
                     "tags": {
                         "device": device_name,
                         "location": device_location,
