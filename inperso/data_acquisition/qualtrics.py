@@ -14,21 +14,84 @@ from inperso.data_acquisition.retriever import Retriever
 api_url = "https://sjc1.qualtrics.com/API/v3/"
 
 
-class AirlyRetriever(Retriever):
+class QualtricsRetriever(Retriever):
     def _fetch(
         self,
         datetime_start: datetime,
         datetime_end: datetime,
     ) -> dict:
-        """Retrieve data from the source and return it."""
+        """Retrieve data from the source and return it.
 
+        Returns a dictionary with the structure: {
+            response_id: {
+                "survey": str,
+                "data": {
+                    "recordedDate": str, ISO 8601 date
+                    "locationLatitude": str,
+                    "locationLongitude": str,
+                    "QIDxxx": int or list[int],
+                    "QIDxxx_TEXT": str,
+                }
+            }
+        }
+        """
+
+        survey_list = get_survey_list(config.qualtrics["api_key"])
+        logging.info(f"Found {len(survey_list)} Qualtrics surveys")
         data = {}
+
+        for survey in survey_list:
+            survey_id = survey["id"]
+            survey_name = survey["name"]
+
+            try:
+                responses = get_responses(
+                    api_key=config.qualtrics["api_key"],
+                    survey_id=survey_id,
+                    datetime_start=datetime_start,
+                    datetime_end=datetime_end,
+                )
+            except RuntimeError as e:
+                logging.error(f"Failed to get responses for survey {survey_id}: {e}")
+                continue
+
+            logging.info(f'Got {len(responses)} responses for survey "{survey_name}"')
+
+            for response in responses:
+                response_id = response["responseId"]
+                data[response_id] = {
+                    "survey": survey_name,
+                    "data": response["values"],
+                }
+
         return data
 
     def _get_line_queries(self) -> list[dict]:
         """Get line queries from stored data dictionary."""
 
         queries = []
+
+        for response_info in self.data.values():
+            survey = response_info["survey"]
+            data = response_info["data"]
+            date = datetime.fromisoformat(data["recordedDate"].replace("Z", "+00:00"))
+            answers = parse_answers(data)
+
+            tags = {
+                "survey": survey,
+            }
+            if "locationLatitude" in data:
+                tags["latitude"] = float(data["locationLatitude"])
+            if "locationLongitude" in data:
+                tags["longitude"] = float(data["locationLongitude"])
+
+            queries.append({
+                "measurement": "qualtrics",
+                "tags": tags,
+                "fields": answers,
+                "time": date,
+            })
+
         return queries
 
 
@@ -92,8 +155,20 @@ def get_responses(
     survey_id: str,
     datetime_start: datetime,
     datetime_end: datetime,
-) -> list:
-    """Get responses for one survey from Qualtrics API."""
+) -> list[dict]:
+    """Get responses for one survey from Qualtrics API.
+
+    Returns a list of dictionaries with the structure (non exhaustive): {
+        "responseId": str,
+        "values": {
+            "recordedDate": str, ISO 8601 date
+            "locationLatitude": str,
+            "locationLongitude": str,
+            "QIDxxx": int or list[int],
+            "QIDxxx_TEXT": str,
+        }
+    }
+    """
 
     logging.info(f"Getting responses for survey {survey_id} from {datetime_start} to {datetime_end}")
 
@@ -123,6 +198,7 @@ def get_responses(
         waiting_time += config.qualtrics["polling_interval_get_response"]
 
     logging.info(f"Response export file ready. File ID: {file_id}")
+    logging.info("Downloading response export file...")
 
     return get_response_export(api_key, survey_id, file_id)
 
@@ -156,7 +232,7 @@ def request_response_export(
         raise RuntimeError(message)
 
     data = response.json()
-    progress_id = data["result"]["progressId"]
+    progress_id = data["result"]["progressId"]  # type: ignore
     return progress_id
 
 
@@ -197,7 +273,7 @@ def get_response_export(
     api_key: str,
     survey_id: str,
     file_id: str,
-) -> list:
+) -> list[dict]:
     """Get the response export file from Qualtrics API."""
 
     url = api_url + f"surveys/{survey_id}/export-responses/{file_id}/file"
@@ -231,3 +307,25 @@ def utc_datetime_to_iso(d: datetime) -> str:
     """Convert a datetime object to an ISO 8601 string."""
 
     return d.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def parse_answers(data: dict) -> dict:
+    """Parse answers from a Qualtrics response data dictionary.
+
+    Keep all the keys starting with "QID". If value is a list of integers (multiple choice), create "QIDx_y" boolean entries.
+    Ex: QID12: [3, 4, 6] -> QID12_3: True, QID12_4: True, QID12_6: True
+    """
+
+    answers = {}
+
+    for key, value in data.items():
+        if not key.startswith("QID"):
+            continue
+
+        if isinstance(value, list):
+            for choice in value:
+                answers[f"{key}_{choice}"] = True
+        else:
+            answers[key] = value
+
+    return answers

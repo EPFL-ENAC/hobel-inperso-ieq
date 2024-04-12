@@ -5,9 +5,15 @@ import logging
 
 from inperso.data_acquisition.airly import AirlyRetriever
 from inperso.data_acquisition.airthings import AirthingsRetriever
+from inperso.data_acquisition.qualtrics import QualtricsRetriever
 from inperso.data_acquisition.uhoo import UhooRetriever
 
-retrievers = [AirlyRetriever(), AirthingsRetriever(), UhooRetriever()]
+retrievers = [
+    AirlyRetriever(),
+    AirthingsRetriever(),
+    QualtricsRetriever(),
+    UhooRetriever(),
+]
 
 
 def main():
