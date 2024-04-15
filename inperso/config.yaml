@@ -16,8 +16,6 @@ uhoo:
   fetch_interval_hours: 1
 
 db:
-  host: localhost
-  port: 8086
   org: enac
   bucket: bucket
 
@@ -36,4 +34,6 @@ from_env:
     client_id: UHOO_CLIENT_ID
 
   db:
+    host: INFLUX_HOST
+    port: INFLUX_PORT
     token: INFLUX_TOKEN

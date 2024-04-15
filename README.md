@@ -39,6 +39,8 @@ Export the following environment variables:
 - `AIRTHINGS_API_KEY`
 - `UHOO_CLIENT_ID`
 - `QUALTRICS_API_KEY`
+- `INFLUX_HOST`
+- `INFLUX_PORT`
 - `INFLUX_TOKEN`
 
 This can be done by putting the variables in an `.env` file and then running 
