@@ -43,7 +43,7 @@ Export the following environment variables:
 - `INFLUX_PORT`
 - `INFLUX_TOKEN`
 
-This can be done by putting the variables in an `.env` file and then running 
+This can be done by putting the variables in an `.env` file and then running
 
 ```
 export $(cat .env)

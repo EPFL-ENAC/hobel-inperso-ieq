@@ -1,21 +1,25 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from pytest_mock import MockFixture
 
-from inperso.data_acquisition.retrieve import main
-from inperso.data_acquisition.retriever import Retriever
 from inperso.data_acquisition.airly import AirlyRetriever
 from inperso.data_acquisition.airthings import AirthingsRetriever
 from inperso.data_acquisition.qualtrics import QualtricsRetriever
+from inperso.data_acquisition.retrieve import main
+from inperso.data_acquisition.retriever import Retriever
 from inperso.data_acquisition.uhoo import UhooRetriever
 
 
-@pytest.mark.parametrize("DerivedRetriever", [
-    AirlyRetriever,
-    AirthingsRetriever,
-    QualtricsRetriever,
-    UhooRetriever,
-])
+@pytest.mark.parametrize(
+    "DerivedRetriever",
+    [
+        AirlyRetriever,
+        AirthingsRetriever,
+        QualtricsRetriever,
+        UhooRetriever,
+    ],
+)
 def test_main(
     mocker: MockFixture,
     DerivedRetriever: type[Retriever],

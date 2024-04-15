@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 
 from inperso import config
-from inperso.data_acquisition.write_db import write
 from inperso.data_acquisition.read_db import query
+from inperso.data_acquisition.write_db import write
 
 
 class Retriever(ABC):
@@ -38,7 +38,9 @@ class Retriever(ABC):
             datetime_end_fragment = datetime_start_fragment + self._fetch_interval
             datetime_end_fragment = min(datetime_end_fragment, datetime_end)
 
-            logging.info(f"Fetching data for {self._measurement_name} from {datetime_start_fragment} to {datetime_end_fragment}.")
+            logging.info(
+                f"Fetching data for {self._measurement_name} from {datetime_start_fragment} to {datetime_end_fragment}."
+            )
 
             self.fetch(
                 datetime_start=datetime_start_fragment,
@@ -51,11 +53,10 @@ class Retriever(ABC):
 
         query_str = (
             f'from(bucket:"{config.db["bucket"]}") '
-            '|> range(start: 0, stop: now()) '
+            "|> range(start: 0, stop: now()) "
             f'|> filter(fn: (r) => r["_measurement"] == "{self._measurement_name}") '
             '|> sort(columns: ["_time"], desc: false) '
-            '|> last() '
-
+            "|> last() "
         )
         result = query(query_str)
 
