@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  ui:
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    image: grafana/grafana-enterprise
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - grafana:/var/lib/grafana
+
+  db:
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_NAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: enac
+      DOCKER_INFLUXDB_INIT_BUCKET: bucket
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN}
+    image: influxdb:2-alpine
+    ports:
+      - 8086:8086
+    restart: unless-stopped
+    volumes:
+      - influxdb:/var/lib/influxdb2
+
+volumes:
+  grafana:
+  influxdb:

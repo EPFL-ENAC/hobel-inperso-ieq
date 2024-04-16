@@ -9,7 +9,7 @@ The project aims to advance the knowledge of indoor environmental quality (IEQ)
 
 ## Requirements
 
-- Python 3.9 minimum
+- Python 3.10 minimum
 
 
 ## For users
@@ -27,6 +27,32 @@ pip install .
 git clone git@github.com:EPFL-ENAC/hobel-inperso-ieq.git
 cd hobel-inperso-ieq
 pip install -e .[dev]
+```
+
+
+# 🏎 Usage
+
+Export the following environment variables:
+
+- `AIRLY_API_KEY`
+- `AIRTHINGS_API_ID`
+- `AIRTHINGS_API_KEY`
+- `UHOO_CLIENT_ID`
+- `QUALTRICS_API_KEY`
+- `INFLUX_HOST`
+- `INFLUX_PORT`
+- `INFLUX_TOKEN`
+
+This can be done by putting the variables in an `.env` file and then running
+
+```
+export $(cat .env)
+```
+
+Then, run
+
+```
+inperso-retrieve
 ```
 
 

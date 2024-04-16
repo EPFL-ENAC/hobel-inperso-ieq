@@ -1,0 +1,39 @@
+datetime_start: 2020-01-01 00:00:00 +00:00
+
+airly:
+  fetch_interval_hours: 24
+  sponsor_name: "École polytechnique fédérale de Lausanne"
+
+airthings:
+  fetch_interval_hours: 24
+
+qualtrics:
+  fetch_interval_hours: 8766
+  polling_interval_get_response: 1
+  max_wait_get_response: 30
+
+uhoo:
+  fetch_interval_hours: 1
+
+db:
+  org: enac
+  bucket: bucket
+
+from_env:
+  airly:
+    api_key: AIRLY_API_KEY
+
+  airthings:
+    api_id: AIRTHINGS_API_ID
+    api_key: AIRTHINGS_API_KEY
+
+  qualtrics:
+    api_key: QUALTRICS_API_KEY
+
+  uhoo:
+    client_id: UHOO_CLIENT_ID
+
+  db:
+    host: INFLUX_HOST
+    port: INFLUX_PORT
+    token: INFLUX_TOKEN
