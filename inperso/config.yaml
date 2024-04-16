@@ -8,7 +8,7 @@ airthings:
   fetch_interval_hours: 24
 
 qualtrics:
-  fetch_interval_hours: 24
+  fetch_interval_hours: 8766
   polling_interval_get_response: 1
   max_wait_get_response: 30
 
