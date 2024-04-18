@@ -10,6 +10,7 @@ import requests
 
 from inperso import config
 from inperso.data_acquisition.retriever import Retriever
+from inperso.utils import iso_to_utc_datetime, utc_datetime_to_iso
 
 api_url = "https://sjc1.qualtrics.com/API/v3/"
 
@@ -82,7 +83,7 @@ class QualtricsRetriever(Retriever):
         for response_info in self.data.values():
             survey = response_info["survey"]
             data = response_info["data"]
-            date = datetime.fromisoformat(data["recordedDate"].replace("Z", "+00:00"))
+            date = iso_to_utc_datetime(data["recordedDate"])
             answers = parse_answers(data)
 
             tags = {
@@ -309,12 +310,6 @@ def get_response_export(
             data = json.load(file)
 
     return data["responses"]
-
-
-def utc_datetime_to_iso(d: datetime) -> str:
-    """Convert a datetime object to an ISO 8601 string."""
-
-    return d.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def parse_answers(data: dict) -> dict:

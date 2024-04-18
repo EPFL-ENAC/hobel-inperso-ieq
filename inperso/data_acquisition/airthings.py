@@ -6,7 +6,7 @@ import requests
 
 from inperso import config
 from inperso.data_acquisition.retriever import Retriever
-from inperso.utils import dict_ints_to_floats
+from inperso.utils import dict_ints_to_floats, utc_datetime_to_iso
 
 accounts_api_url = "https://accounts-api.airthings.com/v1/"
 api_url = "https://ext-api.airthings.com/v1/"
@@ -215,12 +215,10 @@ def get_device_samples_one_page(
     """
 
     url = f"{api_url}devices/{device_id}/samples"
-    start = datetime_start.isoformat()
-    end = datetime_end.isoformat()
     headers = {"Authorization": f"Bearer {access_token}"}
     params = {
-        "start": start,
-        "end": end,
+        "start": utc_datetime_to_iso(datetime_start),
+        "end": utc_datetime_to_iso(datetime_end),
     }
     if cursor is not None:
         params["cursor"] = cursor

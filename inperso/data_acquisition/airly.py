@@ -5,7 +5,7 @@ import requests
 
 from inperso import config
 from inperso.data_acquisition.retriever import Retriever
-from inperso.utils import dict_ints_to_floats
+from inperso.utils import dict_ints_to_floats, iso_to_utc_datetime
 
 api_url = "https://airapi.airly.eu/v2/"
 
@@ -202,6 +202,6 @@ def get_midpoint_datetime_from_strings(
 ) -> datetime:
     """Get the midpoint datetime ojbject from two datetimes iso strings."""
 
-    datetime_start = datetime.fromisoformat(datetime_start_str.replace("Z", "+00:00"))
-    datetime_end = datetime.fromisoformat(datetime_end_str.replace("Z", "+00:00"))
+    datetime_start = iso_to_utc_datetime(datetime_start_str)
+    datetime_end = iso_to_utc_datetime(datetime_end_str)
     return datetime_start + (datetime_end - datetime_start) / 2

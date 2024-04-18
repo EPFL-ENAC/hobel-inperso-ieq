@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import yaml
 
 
@@ -25,3 +27,15 @@ def dict_ints_to_floats(dictionary: dict) -> dict:
     """Convert all integers in a dictionary to floats."""
 
     return {key: float(value) if isinstance(value, int) else value for key, value in dictionary.items()}
+
+
+def utc_datetime_to_iso(d: datetime) -> str:
+    """Convert a datetime object to an ISO 8601 string."""
+
+    return d.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def iso_to_utc_datetime(s: str) -> datetime:
+    """Convert an ISO 8601 string to a datetime object."""
+
+    return datetime.fromisoformat(s.replace("Z", "+00:00"))
