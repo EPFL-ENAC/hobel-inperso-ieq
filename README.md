@@ -49,10 +49,44 @@ This can be done by putting the variables in an `.env` file and then running
 export $(cat .env)
 ```
 
-Then, run
+
+## Command line usage
+
+To retrieve all the latest samples for all sensors and surveys, run in your terminal:
 
 ```
 inperso-retrieve
+```
+
+
+## Script usage
+
+To manually retrieve recent samples in a Python shell or notebook, run the following script:
+
+```
+import inperso
+
+retriever = inperso.data_acquisition.AirlyRetriever()
+retriever.fetch_recent_and_store()
+```
+
+Replace `AirlyRetriever` by the desired sensor or survey type, taken from:
+
+- `AirlyRetriever`
+- `AirthingsRetriever`
+- `QualtricsRetriever`
+- `UhooRetriever`
+
+To fetch samples between two particular dates, run:
+
+```
+import inperso
+from datetime import datetime, timedelta, timezone
+
+datetime_start = datetime(2024, 1, 2, 0, 0, 0, tzinfo=timezone.utc)
+datetime_end = datetime_start + timedelta(days=1)
+retriever = inperso.data_acquisition.AirlyRetriever()
+retriever.fetch_recent_and_store()
 ```
 
 

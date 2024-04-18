@@ -28,6 +28,10 @@ class Retriever(ABC):
 
         datetime_start = self.get_latest_retrieval_datetime()
         datetime_end = datetime.now(timezone.utc)
+        self.fetch_and_store(datetime_start, datetime_end)
+
+    def fetch_and_store(self, datetime_start: datetime, datetime_end: datetime) -> None:
+        """Retrieve data from the source and store it in the database."""
 
         logging.info(f"Will fetch data for {self._measurement_name} from {datetime_start} to {datetime_end}.")
 
@@ -37,6 +41,8 @@ class Retriever(ABC):
             datetime_start_fragment = datetime_start + i * self._fetch_interval
             datetime_end_fragment = datetime_start_fragment + self._fetch_interval
             datetime_end_fragment = min(datetime_end_fragment, datetime_end)
+            if datetime_start_fragment >= datetime_end_fragment:
+                break
 
             logging.info(
                 f"Fetching data for {self._measurement_name} from {datetime_start_fragment} to {datetime_end_fragment}."
