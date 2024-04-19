@@ -67,7 +67,7 @@ To manually retrieve recent samples in a Python shell or notebook, run the follo
 import inperso
 
 retriever = inperso.data_acquisition.AirlyRetriever()
-retriever.fetch_recent_and_store()
+retriever.fetch_recent()
 ```
 
 Replace `AirlyRetriever` by the desired sensor or survey type, taken from:
@@ -86,7 +86,16 @@ from datetime import datetime, timedelta, timezone
 datetime_start = datetime(2024, 1, 2, 0, 0, 0, tzinfo=timezone.utc)
 datetime_end = datetime_start + timedelta(days=1)
 retriever = inperso.data_acquisition.AirlyRetriever()
-retriever.fetch_and_store(datetime_start, datetime_end)
+retriever.fetch(datetime_start, datetime_end)
+```
+
+To fetch samples from a file, run:
+
+```
+import inperso
+
+retriever = inperso.data_acquisition.AirlyRetriever()
+retriever.fetch_from_file("path/to/file.csv")
 ```
 
 

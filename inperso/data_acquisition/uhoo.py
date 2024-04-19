@@ -22,7 +22,7 @@ class UhooRetriever(Retriever):
         datetime_start: datetime,
         datetime_end: datetime,
     ) -> None:
-        """Retrieve data from the source and return it."""
+        """Retrieve data from the source."""
 
         token = get_token(config.uhoo["client_id"])
         devices = get_device_list(token)

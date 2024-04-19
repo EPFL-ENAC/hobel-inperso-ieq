@@ -29,7 +29,7 @@ class QualtricsRetriever(Retriever):
         datetime_start: datetime,
         datetime_end: datetime,
     ) -> None:
-        """Retrieve data from the source and return it."""
+        """Retrieve data from the source."""
 
         survey_list = get_survey_list(config.qualtrics["api_key"])
         logging.info(f"Found {len(survey_list)} Qualtrics surveys")

@@ -18,8 +18,8 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 
 class WriteQuery(TypedDict):
     measurement: str
-    tags: dict[str, int | float | str | bool]
-    fields: dict[str, int | float | str | bool]
+    tags: dict
+    fields: dict
     time: datetime | int  # Unix timestamp
 
 

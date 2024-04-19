@@ -1,5 +1,6 @@
+import csv
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -24,7 +25,7 @@ class AirlyRetriever(Retriever):
         datetime_start: datetime,
         datetime_end: datetime,
     ) -> None:
-        """Retrieve data from the source and return it.
+        """Retrieve data from the source.
 
         Can only retrieve data for the last 24 hours.
         """
@@ -68,6 +69,85 @@ class AirlyRetriever(Retriever):
                         "latitude": latitude,
                         "longitude": longitude,
                     },
+                    "fields": fields,
+                    "time": midpoint_datetime,
+                })
+
+    def _fetch_from_file(self, file_path: str) -> None:
+        """Retrieve data from a file."""
+
+        installation_list = get_installation_list(config.airly["api_key"], config.airly["sponsor_name"])
+        installation_per_id = {i["id"]: i for i in installation_list}
+
+        with open(file_path, "r") as file:
+            reader = csv.DictReader(
+                file,
+                fieldnames=[
+                    "From",
+                    "Till",
+                    "Installation id",
+                    "Sensor id",
+                    "Location",
+                    "Airly CAQI",
+                    "PM10 [ug/m3]",
+                    "PM10 [% of WHO guideline]",
+                    "PM2.5 [ug/m3]",
+                    "PM2.5 [% of WHO guideline]",
+                    "PM1 [ug/m3]",
+                    "NO2 [ug/m3]",
+                    "NO2 [% of WHO guideline]",
+                    "NO [ug/m3]",
+                    "O3 [ug/m3]",
+                    "O3 [% of WHO guideline]",
+                    "CO [ug/m3]",
+                    "CO [% of WHO guideline]",
+                    "SO2 [ug/m3]",
+                    "SO2 [% of WHO guideline]",
+                    "H2S [ug/m3]",
+                    "Temperature [°C]",
+                    "Wind speed [km/h]",
+                    "Wind bearing",
+                    "Pressure [hPa]",
+                    "Humidity [%]",
+                ],
+            )
+            next(reader)  # Skip header
+
+            for row in reader:
+                installation_id = int(row["Installation id"])
+                installation = installation_per_id.get(installation_id)
+
+                tags: dict[str, int | str] = {
+                    "device": installation_id,
+                }
+                if installation is not None:
+                    tags["location"] = installation["address"]["city"]
+                    tags["latitude"] = installation["location"]["latitude"]
+                    tags["longitude"] = installation["location"]["longitude"]
+                else:
+                    logging.warning(f"Installation {installation_id} not found in the Airly API")
+                    tags["location"] = row["Location"]
+
+                fields = {
+                    "co": row["CO [ug/m3]"],
+                    "humidity": row["Humidity [%]"],
+                    "no2": row["NO2 [ug/m3]"],
+                    "o3": row["O3 [ug/m3]"],
+                    "pm1": row["PM1 [ug/m3]"],
+                    "pm10": row["PM10 [ug/m3]"],
+                    "pm25": row["PM2.5 [ug/m3]"],
+                    "pressure": row["Pressure [hPa]"],
+                    "so2": row["SO2 [ug/m3]"],
+                    "temperature": row["Temperature [°C]"],
+                }
+                fields = {k: float(v) for k, v in fields.items() if v != ""}
+
+                midpoint_datetime = get_midpoint_datetime_from_strings(row["From"], row["Till"])
+                midpoint_datetime = midpoint_datetime.astimezone(timezone.utc)
+
+                self.add_write_query({
+                    "measurement": self._measurement_name,
+                    "tags": tags,
                     "fields": fields,
                     "time": midpoint_datetime,
                 })

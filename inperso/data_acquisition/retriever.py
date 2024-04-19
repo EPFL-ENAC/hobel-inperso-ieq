@@ -54,6 +54,12 @@ class Retriever(ABC):
             )
             self._store()
 
+    def fetch_from_file(self, filename: str) -> None:
+        """Retrieve data from a file and store it in the database."""
+
+        self._fetch_from_file(filename)
+        self._store()
+
     def get_latest_retrieval_datetime(self) -> datetime:
         """Get the most recent datetime for the measurement associated with the retriever."""
 
@@ -92,6 +98,11 @@ class Retriever(ABC):
         datetime_end: datetime,
     ) -> None:
         """Retrieve data from the source while regularly calling self.add_write_query."""
+
+    def _fetch_from_file(self, filename: str) -> None:
+        """Retrieve data from a file while regularly calling self.add_write_query."""
+
+        raise NotImplementedError("Retriever does not support fetching from a file.")
 
     def _store(self) -> None:
         if len(self._write_queries) == 0:
