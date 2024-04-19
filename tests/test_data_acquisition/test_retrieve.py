@@ -34,10 +34,10 @@ def test_main(
     mocker.patch(f"{retriever_module_path}.get_latest_retrieval_datetime", return_value=datetime_start)
 
     # Mock the fetch and store methods
-    mocker.patch(f"{retriever_module_path}.fetch")
-    mocker.patch(f"{retriever_module_path}.store")
-    fetch_mock = mocker.patch(f"{derived_retriever_module_path}.fetch")
-    store_mock = mocker.patch(f"{derived_retriever_module_path}.store")
+    mocker.patch(f"{retriever_module_path}._fetch")
+    mocker.patch(f"{retriever_module_path}._store")
+    fetch_mock = mocker.patch(f"{derived_retriever_module_path}._fetch")
+    store_mock = mocker.patch(f"{derived_retriever_module_path}._store")
 
     main()
 

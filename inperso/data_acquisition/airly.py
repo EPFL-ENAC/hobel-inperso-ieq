@@ -23,38 +23,14 @@ class AirlyRetriever(Retriever):
         self,
         datetime_start: datetime,
         datetime_end: datetime,
-    ) -> dict:
+    ) -> None:
         """Retrieve data from the source and return it.
 
         Can only retrieve data for the last 24 hours.
-
-        Returns a dictionary with the following structure: {
-            "installation_id": {
-                "city": str,
-                "data": [
-                    {
-                        "fromDateTime": str,
-                        "tillDateTime": str,
-                        "values": [
-                            {
-                                "name": str,
-                                "value": float,
-                            },
-                            ...
-                        ],
-                    },
-                    ...
-                ],
-                "latitude": float,
-                "longitude": float,
-            },
-            ...
-        }
         """
 
         installation_list = get_installation_list(config.airly["api_key"], config.airly["sponsor_name"])
         logging.info(f"Found {len(installation_list)} Airly installations for sponsor {config.airly['sponsor_name']}")
-        data = {}
 
         for installation in installation_list:
             installation_id = installation["id"]
@@ -69,31 +45,13 @@ class AirlyRetriever(Retriever):
                 logging.error(f"Failed to get measurements for installation {installation_id} in {city}: {e}")
                 continue
 
-            measurements = remove_fields_from_measurements(measurements, ["indexes", "standards"])
-            data[installation_id] = {
-                "city": city,
-                "data": measurements,
-                "latitude": latitude,
-                "longitude": longitude,
-            }
-
-        return data
-
-    def _get_line_queries(self) -> list[dict]:
-        """Get line queries from stored data dictionary."""
-
-        queries = []
-
-        for installation_id, infos in self.data.items():
-            city = infos["city"]
-            latitude = infos["latitude"]
-            longitude = infos["longitude"]
-            measurements = infos["data"]
-
             for measurement in measurements:
-                datetime_start = measurement["fromDateTime"]
-                datetime_end = measurement["tillDateTime"]
-                midpoint_datetime = get_midpoint_datetime_from_strings(datetime_start, datetime_end)
+                sample_datetime_start = measurement["fromDateTime"]
+                sample_datetime_end = measurement["tillDateTime"]
+                midpoint_datetime = get_midpoint_datetime_from_strings(
+                    sample_datetime_start,
+                    sample_datetime_end,
+                )
                 fields = {}
 
                 for value in measurement["values"]:
@@ -102,7 +60,7 @@ class AirlyRetriever(Retriever):
                     fields[field_name] = field_value
 
                 fields = dict_ints_to_floats(fields)
-                queries.append({
+                self.add_write_query({
                     "measurement": self._measurement_name,
                     "tags": {
                         "device": installation_id,
@@ -113,8 +71,6 @@ class AirlyRetriever(Retriever):
                     "fields": fields,
                     "time": midpoint_datetime,
                 })
-
-        return queries
 
 
 def get_installation_list(api_key: str, sponsor_name: str) -> list[dict]:
@@ -178,22 +134,6 @@ def get_measurements(api_key: str, installation_id: int) -> list[dict]:
 
     measurements = response.json()
     return measurements["history"]
-
-
-def remove_fields_from_measurements(
-    measurements: list[dict],
-    field_names: list[str],
-) -> list[dict]:
-    """Remove sets of computed fields from the measurements list.
-
-    Useful to remove "indexes" and "standards" fields.
-    """
-
-    for measurement in measurements:
-        for field_name in field_names:
-            measurement.pop(field_name, None)
-
-    return measurements
 
 
 def get_midpoint_datetime_from_strings(

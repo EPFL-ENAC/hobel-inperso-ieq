@@ -25,27 +25,12 @@ class AirthingsRetriever(Retriever):
         self,
         datetime_start: datetime,
         datetime_end: datetime,
-    ) -> dict:
-        """Retrieve data from the source and return it.
-
-        Returns a dictionary of the form: {
-            "device_name": {
-                "data": {
-                    "time": list[int],
-                    "xxx": list[Optional[float]],
-                },
-                "type": str,
-                "location": str,
-            },
-            "device_name_2": ...
-        }
-        """
+    ) -> None:
+        """Retrieve data from the source and return it."""
 
         token = get_token(config.airthings["api_id"], config.airthings["api_key"])
         device_list = get_device_list(token)
         logging.info(f"Found {len(device_list)} Airthings devices.")
-
-        data = {}
 
         for device in device_list:
             device_id = device["id"]
@@ -65,24 +50,6 @@ class AirthingsRetriever(Retriever):
             device_type = device["deviceType"]
             device_location = device["location"]["name"]
 
-            data[device_name] = {
-                "data": device_data,
-                "type": device_type,
-                "location": device_location,
-            }
-
-        return data
-
-    def _get_line_queries(self) -> list[dict]:
-        """Get line queries from stored data dictionary."""
-
-        queries = []
-
-        for device_name, device_info in self.data.items():
-            device_data = device_info["data"]
-            device_type = device_info["type"]
-            device_location = device_info["location"]
-
             for i in range(len(device_data["time"])):
                 fields = {}
 
@@ -100,7 +67,7 @@ class AirthingsRetriever(Retriever):
                 timestamp = device_data["time"][i]
                 fields = dict_ints_to_floats(fields)
 
-                queries.append({
+                self.add_write_query({
                     "measurement": self._measurement_name,
                     "tags": {
                         "device": device_name,
@@ -110,8 +77,6 @@ class AirthingsRetriever(Retriever):
                     "fields": fields,
                     "time": timestamp,
                 })
-
-        return queries
 
 
 def get_token(client_id: str, client_secret: str) -> str:

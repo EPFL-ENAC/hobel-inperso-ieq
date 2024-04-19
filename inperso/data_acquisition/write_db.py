@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import TypedDict
+
 from influxdb_client import InfluxDBClient, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -13,7 +16,14 @@ client = InfluxDBClient(
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
 
-def write(queries: list[dict]):
+class WriteQuery(TypedDict):
+    measurement: str
+    tags: dict[str, int | float | str | bool]
+    fields: dict[str, int | float | str | bool]
+    time: datetime | int  # Unix timestamp
+
+
+def write(queries: list[WriteQuery]):
     """Write queries (dictionaries) into the database.
 
     Timestamps must be in UTC with second precision.

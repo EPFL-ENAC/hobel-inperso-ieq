@@ -21,31 +21,12 @@ class UhooRetriever(Retriever):
         self,
         datetime_start: datetime,
         datetime_end: datetime,
-    ) -> dict:
-        """Retrieve data from the source and return it.
-
-        Returns a dictionary with the following structure: {
-            "device_name": {
-                "data": [
-                    {
-                        "timestamp": datetime,
-                        "field1": value1,
-                        "field2": value2,
-                        ...
-                    },
-                    ...
-                ],
-                "location": str,
-                "floor": int,
-            },
-            ...
-        }
-        """
+    ) -> None:
+        """Retrieve data from the source and return it."""
 
         token = get_token(config.uhoo["client_id"])
         devices = get_device_list(token)
 
-        data = {}
         logging.info(f"Found {len(devices)} devices")
 
         for device in devices:
@@ -65,30 +46,12 @@ class UhooRetriever(Retriever):
             device_location = device["roomName"]
             device_floor = device["floorNumber"]
 
-            data[device_name] = {
-                "data": device_data["data"],
-                "location": device_location,
-                "floor": device_floor,
-            }
-
-        return data
-
-    def _get_line_queries(self) -> list[dict]:
-        """Get line queries from stored data dictionary."""
-
-        queries = []
-
-        for device_name, device_info in self.data.items():
-            device_data = device_info["data"]
-            device_location = device_info["location"]
-            device_floor = device_info["floor"]
-
-            for entry in device_data:
+            for entry in device_data["data"]:
                 fields = entry.copy()
                 timestamp = fields.pop("timestamp")
                 fields = dict_ints_to_floats(fields)
 
-                queries.append({
+                self.add_write_query({
                     "measurement": self._measurement_name,
                     "tags": {
                         "device": device_name,
@@ -98,8 +61,6 @@ class UhooRetriever(Retriever):
                     "fields": fields,
                     "time": timestamp,
                 })
-
-        return queries
 
 
 def get_token(client_id: str) -> str:
