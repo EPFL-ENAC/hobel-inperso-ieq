@@ -35,7 +35,7 @@ def write(queries: list[WriteQuery]):
     Timestamps must be in UTC with second precision.
     """
 
-    for attempt in range(config.db["maximum_write_retries"]):
+    for attempt in range(config.db["maximum_query_retries"]):
         try:
             write_api = get_write_api()
             write_api.write(bucket=config.db["bucket"], record=queries, write_precision=WritePrecision.S)
@@ -43,6 +43,6 @@ def write(queries: list[WriteQuery]):
 
         except Exception as e:
             logging.error(
-                f"Failed to write data to the database (attempt {attempt + 1}/{config.db['maximum_write_retries']}): {e}"
+                f"Failed to write data to the database (attempt {attempt + 1}/{config.db['maximum_query_retries']}): {e}"
             )
-            time.sleep(config.db["write_retry_delay_seconds"])
+            time.sleep(config.db["query_retry_delay_seconds"])
