@@ -7,15 +7,15 @@ from inperso.data_acquisition.airthings import AirthingsRetriever
 from inperso.data_acquisition.qualtrics import QualtricsRetriever
 from inperso.data_acquisition.uhoo import UhooRetriever
 
-retrievers = [
-    AirlyRetriever(),
-    AirthingsRetriever(),
-    QualtricsRetriever(),
-    UhooRetriever(),
-]
-
 
 def main():
+    retrievers = [
+        AirlyRetriever(),
+        AirthingsRetriever(),
+        QualtricsRetriever(),
+        UhooRetriever(),
+    ]
+
     for retriever in retrievers:
         try:
             retriever.fetch_recent()

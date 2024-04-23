@@ -18,7 +18,9 @@ uhoo:
 db:
   org: enac
   bucket: bucket
+  maximum_write_retries: 10
   minimum_write_batch_size: 10000
+  write_retry_delay_seconds: 1
 
 from_env:
   airly:
