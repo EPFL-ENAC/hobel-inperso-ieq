@@ -143,7 +143,7 @@ class AirlyRetriever(Retriever):
                 fields = {k: float(v) for k, v in fields.items() if v != ""}
 
                 midpoint_datetime = get_midpoint_datetime_from_strings(row["From"], row["Till"])
-                midpoint_datetime = midpoint_datetime.astimezone(timezone.utc)
+                midpoint_datetime = midpoint_datetime.replace(tzinfo=timezone.utc)
 
                 self.add_write_query({
                     "measurement": self._measurement_name,
