@@ -1,3 +1,4 @@
+import csv
 import logging
 from datetime import datetime, timedelta
 
@@ -9,6 +10,13 @@ from inperso.utils import dict_ints_to_floats
 
 
 class UhooRetriever(Retriever):
+    def __init__(self) -> None:
+        super().__init__()
+
+        token = get_token(config.uhoo["client_id"])
+        self.devices = get_device_list(token)
+        logging.info(f"Found {len(self.devices)} devices")
+
     @property
     def _measurement_name(self) -> str:
         return "uhoo"
@@ -25,11 +33,8 @@ class UhooRetriever(Retriever):
         """Retrieve data from the source."""
 
         token = get_token(config.uhoo["client_id"])
-        devices = get_device_list(token)
 
-        logging.info(f"Found {len(devices)} devices")
-
-        for device in devices:
+        for device in self.devices:
             device_name = device["deviceName"]
             device_mac = device["macAddress"]
 
@@ -58,6 +63,93 @@ class UhooRetriever(Retriever):
                         "location": device_location,
                         "floor": device_floor,
                     },
+                    "fields": fields,
+                    "time": timestamp,
+                })
+
+    def _fetch_from_file(
+        self,
+        file_path: str,
+        device_name: str,
+    ) -> None:
+        """Retrieve data from a file."""
+
+        devices_by_name = {device["deviceName"]: device for device in self.devices}
+        if device_name not in devices_by_name:
+            logging.warning(f"Device {device_name} not found, skipping")
+            return
+
+        device = devices_by_name[device_name]
+        device_location = device["roomName"]
+        device_floor = device["floorNumber"]
+
+        tags = {
+            "device": device_name,
+            "location": device_location,
+            "floor": device_floor,
+        }
+
+        with open(file_path, "r") as file:
+            reader = csv.DictReader(
+                file,
+                fieldnames=[
+                    "Date and Time",
+                    "Temperature",
+                    "Relative Humidity",
+                    "PM2.5",
+                    "TVOC",
+                    "CO2",
+                    "CO",
+                    "Air Pressure",
+                    "Ozone",
+                    "NO2",
+                    "PM1",
+                    "PM4",
+                    "PM10",
+                    "Formaldehyde",
+                    "Light",
+                    "Sound",
+                    "Virus Index",
+                    "Hydrogen Sulfide",
+                    "Ammonia",
+                    "Nitric Oxide",
+                    "Sulphur Dioxide",
+                    "Oxygen",
+                ],
+            )
+            next(reader)  # Skip header
+
+            for row in reader:
+                timestamp = int(datetime.fromisoformat(row["Date and Time"]).timestamp())
+
+                fields = {
+                    "virusIndex": row["Virus Index"],
+                    "temperature": row["Temperature"],
+                    "humidity": row["Relative Humidity"],
+                    "pm25": row["PM2.5"],
+                    "tvoc": row["TVOC"],
+                    "co2": row["CO2"],
+                    "co": row["CO"],
+                    "airPressure": row["Air Pressure"],
+                    "ozone": row["Ozone"],
+                    "no2": row["NO2"],
+                    "pm1": row["PM1"],
+                    "pm4": row["PM4"],
+                    "pm10": row["PM10"],
+                    "ch2o": row["Formaldehyde"],
+                    "light": row["Light"],
+                    "sound": row["Sound"],
+                    "h2s": row["Hydrogen Sulfide"],
+                    "no": row["Nitric Oxide"],
+                    "so2": row["Sulphur Dioxide"],
+                    "nh3": row["Ammonia"],
+                    "oxygen": row["Oxygen"],
+                }
+                fields = {k: float(v) for k, v in fields.items() if v != ""}
+
+                self.add_write_query({
+                    "measurement": self._measurement_name,
+                    "tags": tags,
                     "fields": fields,
                     "time": timestamp,
                 })

@@ -41,7 +41,7 @@ class Retriever(ABC):
             datetime_start_fragment = datetime_start + i * self._fetch_interval
             datetime_end_fragment = datetime_start_fragment + self._fetch_interval
             datetime_end_fragment = min(datetime_end_fragment, datetime_end)
-            if datetime_start_fragment >= datetime_end_fragment:
+            if datetime_start_fragment.replace(microsecond=0) >= datetime_end_fragment.replace(microsecond=0):
                 break
 
             logging.info(
@@ -54,10 +54,10 @@ class Retriever(ABC):
             )
             self._store()
 
-    def fetch_from_file(self, filename: str) -> None:
+    def fetch_from_file(self, file_path: str, *args, **kwargs) -> None:
         """Retrieve data from a file and store it in the database."""
 
-        self._fetch_from_file(filename)
+        self._fetch_from_file(file_path, *args, **kwargs)
         self._store()
 
     def get_latest_retrieval_datetime(self) -> datetime:
@@ -99,7 +99,7 @@ class Retriever(ABC):
     ) -> None:
         """Retrieve data from the source while regularly calling self.add_write_query."""
 
-    def _fetch_from_file(self, filename: str) -> None:
+    def _fetch_from_file(self, file_path: str, *args, **kwargs) -> None:
         """Retrieve data from a file while regularly calling self.add_write_query."""
 
         raise NotImplementedError("Retriever does not support fetching from a file.")

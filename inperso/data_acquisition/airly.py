@@ -12,6 +12,14 @@ api_url = "https://airapi.airly.eu/v2/"
 
 
 class AirlyRetriever(Retriever):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.installation_list = get_installation_list(config.airly["api_key"], config.airly["sponsor_name"])
+        logging.info(
+            f"Found {len(self.installation_list)} Airly installations for sponsor {config.airly['sponsor_name']}"
+        )
+
     @property
     def _measurement_name(self) -> str:
         return "airly"
@@ -30,10 +38,7 @@ class AirlyRetriever(Retriever):
         Can only retrieve data for the last 24 hours.
         """
 
-        installation_list = get_installation_list(config.airly["api_key"], config.airly["sponsor_name"])
-        logging.info(f"Found {len(installation_list)} Airly installations for sponsor {config.airly['sponsor_name']}")
-
-        for installation in installation_list:
+        for installation in self.installation_list:
             installation_id = installation["id"]
             city = installation["address"]["city"]
             latitude = installation["location"]["latitude"]
@@ -76,8 +81,7 @@ class AirlyRetriever(Retriever):
     def _fetch_from_file(self, file_path: str) -> None:
         """Retrieve data from a file."""
 
-        installation_list = get_installation_list(config.airly["api_key"], config.airly["sponsor_name"])
-        installation_per_id = {i["id"]: i for i in installation_list}
+        installation_per_id = {i["id"]: i for i in self.installation_list}
 
         with open(file_path, "r") as file:
             reader = csv.DictReader(

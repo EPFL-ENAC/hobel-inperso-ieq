@@ -61,6 +61,8 @@ inperso-retrieve
 
 ## Script usage
 
+### Fetch recent data
+
 To manually retrieve recent samples in a Python shell or notebook, run the following script:
 
 ```
@@ -77,6 +79,9 @@ Replace `AirlyRetriever` by the desired sensor or survey type, taken from:
 - `QualtricsRetriever`
 - `UhooRetriever`
 
+
+### Fetch data within a time interval
+
 To fetch samples between two particular dates, run:
 
 ```
@@ -89,6 +94,9 @@ retriever = inperso.data_acquisition.AirlyRetriever()
 retriever.fetch(datetime_start, datetime_end)
 ```
 
+
+### Fetch data from a file
+
 To fetch samples from a file, run:
 
 ```
@@ -97,6 +105,32 @@ import inperso
 retriever = inperso.data_acquisition.AirlyRetriever()
 retriever.fetch_from_file("path/to/file.csv")
 ```
+
+
+# 🛢️ Populating the database
+
+To fill the database with historical data, follow these steps for each kind of sensor.
+
+### Airly
+
+- On the Airly Dashboard website, go to the Report Generator tab and export a hour-by-hour csv file.
+- Follow the `Fetch data from a file` instructions.
+
+
+### Airthings
+
+- Follow the `Fetch data within a time interval` instructions.
+
+
+### Qualtrics
+
+- Follow the `Fetch data within a time interval` instructions.
+
+
+### uHoo
+
+- Use `scripts/request_uhoo_minute_data.py` to request hour-by-hour csv files. The token must be retrieved from the uHoo Dashboard (using inspector tools).
+- Follow the `Fetch data from a file` instructions.
 
 
 # ✅ Run tests
