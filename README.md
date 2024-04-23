@@ -129,8 +129,8 @@ To fill the database with historical data, follow these steps for each kind of s
 
 ### uHoo
 
-- Use `scripts/request_uhoo_minute_data.py` to request hour-by-hour csv files. The token must be retrieved from the uHoo Dashboard (using inspector tools).
-- Follow the `Fetch data from a file` instructions.
+- Use `scripts/request_uhoo_minute_data.py` to request minute-by-minute csv files. The token must be retrieved from the uHoo Dashboard (using inspector tools).
+- Follow the `Fetch data from a file` instructions. If multiple files should be processed, use `scripts/fetch_uhoo_from_files.py`.
 
 
 # ✅ Run tests
