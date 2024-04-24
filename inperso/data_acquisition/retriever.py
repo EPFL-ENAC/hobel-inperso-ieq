@@ -67,7 +67,6 @@ class Retriever(ABC):
             f'from(bucket:"{config.db["bucket"]}") '
             "|> range(start: 0, stop: now()) "
             f'|> filter(fn: (r) => r["_measurement"] == "{self._measurement_name}") '
-            '|> sort(columns: ["_time"], desc: false) '
             "|> last() "
         )
         result = query(query_str)
