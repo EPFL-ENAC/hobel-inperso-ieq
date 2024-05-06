@@ -1,11 +1,11 @@
-datetime_start: 2020-01-01 00:00:00 +00:00
+datetime_start: 2023-01-01 00:00:00 +00:00
 
 airly:
   fetch_interval_hours: 24
   sponsor_name: "École polytechnique fédérale de Lausanne"
 
 airthings:
-  fetch_interval_hours: 24
+  fetch_interval_hours: 8766
 
 qualtrics:
   fetch_interval_hours: 8766
@@ -18,6 +18,9 @@ uhoo:
 db:
   org: enac
   bucket: bucket
+  maximum_query_retries: 10
+  minimum_write_batch_size: 10000
+  query_retry_delay_seconds: 5
 
 from_env:
   airly:

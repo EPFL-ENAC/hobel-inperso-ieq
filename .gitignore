@@ -1,4 +1,2 @@
-.coverage
-.env
+.*
 __pycache__
-.python-version

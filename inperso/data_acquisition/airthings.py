@@ -6,7 +6,7 @@ import requests
 
 from inperso import config
 from inperso.data_acquisition.retriever import Retriever
-from inperso.utils import dict_ints_to_floats
+from inperso.utils import dict_ints_to_floats, utc_datetime_to_iso
 
 accounts_api_url = "https://accounts-api.airthings.com/v1/"
 api_url = "https://ext-api.airthings.com/v1/"
@@ -25,27 +25,12 @@ class AirthingsRetriever(Retriever):
         self,
         datetime_start: datetime,
         datetime_end: datetime,
-    ) -> dict:
-        """Retrieve data from the source and return it.
-
-        Returns a dictionary of the form: {
-            "device_name": {
-                "data": {
-                    "time": list[int],
-                    "xxx": list[Optional[float]],
-                },
-                "type": str,
-                "location": str,
-            },
-            "device_name_2": ...
-        }
-        """
+    ) -> None:
+        """Retrieve data from the source."""
 
         token = get_token(config.airthings["api_id"], config.airthings["api_key"])
         device_list = get_device_list(token)
         logging.info(f"Found {len(device_list)} Airthings devices.")
-
-        data = {}
 
         for device in device_list:
             device_id = device["id"]
@@ -65,24 +50,6 @@ class AirthingsRetriever(Retriever):
             device_type = device["deviceType"]
             device_location = device["location"]["name"]
 
-            data[device_name] = {
-                "data": device_data,
-                "type": device_type,
-                "location": device_location,
-            }
-
-        return data
-
-    def _get_line_queries(self) -> list[dict]:
-        """Get line queries from stored data dictionary."""
-
-        queries = []
-
-        for device_name, device_info in self.data.items():
-            device_data = device_info["data"]
-            device_type = device_info["type"]
-            device_location = device_info["location"]
-
             for i in range(len(device_data["time"])):
                 fields = {}
 
@@ -100,7 +67,7 @@ class AirthingsRetriever(Retriever):
                 timestamp = device_data["time"][i]
                 fields = dict_ints_to_floats(fields)
 
-                queries.append({
+                self.add_write_query({
                     "measurement": self._measurement_name,
                     "tags": {
                         "device": device_name,
@@ -110,8 +77,6 @@ class AirthingsRetriever(Retriever):
                     "fields": fields,
                     "time": timestamp,
                 })
-
-        return queries
 
 
 def get_token(client_id: str, client_secret: str) -> str:
@@ -215,12 +180,10 @@ def get_device_samples_one_page(
     """
 
     url = f"{api_url}devices/{device_id}/samples"
-    start = datetime_start.isoformat()
-    end = datetime_end.isoformat()
     headers = {"Authorization": f"Bearer {access_token}"}
     params = {
-        "start": start,
-        "end": end,
+        "start": utc_datetime_to_iso(datetime_start),
+        "end": utc_datetime_to_iso(datetime_end),
     }
     if cursor is not None:
         params["cursor"] = cursor

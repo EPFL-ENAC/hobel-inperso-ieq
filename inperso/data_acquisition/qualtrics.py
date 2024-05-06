@@ -10,6 +10,7 @@ import requests
 
 from inperso import config
 from inperso.data_acquisition.retriever import Retriever
+from inperso.utils import iso_to_utc_datetime, utc_datetime_to_iso
 
 api_url = "https://sjc1.qualtrics.com/API/v3/"
 
@@ -27,26 +28,11 @@ class QualtricsRetriever(Retriever):
         self,
         datetime_start: datetime,
         datetime_end: datetime,
-    ) -> dict:
-        """Retrieve data from the source and return it.
-
-        Returns a dictionary with the structure: {
-            response_id: {
-                "survey": str,
-                "data": {
-                    "recordedDate": str, ISO 8601 date
-                    "locationLatitude": str,
-                    "locationLongitude": str,
-                    "QIDxxx": int or list[int],
-                    "QIDxxx_TEXT": str,
-                }
-            }
-        }
-        """
+    ) -> None:
+        """Retrieve data from the source."""
 
         survey_list = get_survey_list(config.qualtrics["api_key"])
         logging.info(f"Found {len(survey_list)} Qualtrics surveys")
-        data = {}
 
         for survey in survey_list:
             survey_id = survey["id"]
@@ -67,40 +53,27 @@ class QualtricsRetriever(Retriever):
 
             for response in responses:
                 response_id = response["responseId"]
-                data[response_id] = {
+                data = response["values"]
+                date = iso_to_utc_datetime(data["recordedDate"])
+                answers = parse_answers(data)
+
+                tags = {
                     "survey": survey_name,
-                    "data": response["values"],
+                    "response_id": response_id,
                 }
 
-        return data
+                if "locationLatitude" in data:
+                    tags["latitude"] = float(data["locationLatitude"])
 
-    def _get_line_queries(self) -> list[dict]:
-        """Get line queries from stored data dictionary."""
+                if "locationLongitude" in data:
+                    tags["longitude"] = float(data["locationLongitude"])
 
-        queries = []
-
-        for response_info in self.data.values():
-            survey = response_info["survey"]
-            data = response_info["data"]
-            date = datetime.fromisoformat(data["recordedDate"].replace("Z", "+00:00"))
-            answers = parse_answers(data)
-
-            tags = {
-                "survey": survey,
-            }
-            if "locationLatitude" in data:
-                tags["latitude"] = float(data["locationLatitude"])
-            if "locationLongitude" in data:
-                tags["longitude"] = float(data["locationLongitude"])
-
-            queries.append({
-                "measurement": self._measurement_name,
-                "tags": tags,
-                "fields": answers,
-                "time": date,
-            })
-
-        return queries
+                self.add_write_query({
+                    "measurement": self._measurement_name,
+                    "tags": tags,
+                    "fields": answers,
+                    "time": date,
+                })
 
 
 def get_survey_list(api_key: str) -> list[dict]:
@@ -309,12 +282,6 @@ def get_response_export(
             data = json.load(file)
 
     return data["responses"]
-
-
-def utc_datetime_to_iso(d: datetime) -> str:
-    """Convert a datetime object to an ISO 8601 string."""
-
-    return d.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def parse_answers(data: dict) -> dict:

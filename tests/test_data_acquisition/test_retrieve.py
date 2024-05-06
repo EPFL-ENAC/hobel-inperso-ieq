@@ -10,19 +10,27 @@ from inperso.data_acquisition.retrieve import main
 from inperso.data_acquisition.retriever import Retriever
 from inperso.data_acquisition.uhoo import UhooRetriever
 
+retrievers = [
+    AirlyRetriever,
+    AirthingsRetriever,
+    QualtricsRetriever,
+    UhooRetriever,
+]
 
-@pytest.mark.parametrize(
-    "DerivedRetriever",
-    [
-        AirlyRetriever,
-        AirthingsRetriever,
-        QualtricsRetriever,
-        UhooRetriever,
-    ],
-)
+
+@pytest.fixture
+def mock_retrievers_init(
+    mocker: MockFixture,
+) -> None:
+    for retriever in retrievers:
+        mocker.patch(f"{retriever.__module__}.{retriever.__name__}.__init__", return_value=None)
+
+
+@pytest.mark.parametrize("DerivedRetriever", retrievers)
 def test_main(
     mocker: MockFixture,
     DerivedRetriever: type[Retriever],
+    mock_retrievers_init: None,
 ):
     """Test that the retrievers' fetch and store methods are called."""
 
@@ -34,10 +42,10 @@ def test_main(
     mocker.patch(f"{retriever_module_path}.get_latest_retrieval_datetime", return_value=datetime_start)
 
     # Mock the fetch and store methods
-    mocker.patch(f"{retriever_module_path}.fetch")
-    mocker.patch(f"{retriever_module_path}.store")
-    fetch_mock = mocker.patch(f"{derived_retriever_module_path}.fetch")
-    store_mock = mocker.patch(f"{derived_retriever_module_path}.store")
+    mocker.patch(f"{retriever_module_path}._fetch")
+    mocker.patch(f"{retriever_module_path}._store")
+    fetch_mock = mocker.patch(f"{derived_retriever_module_path}._fetch")
+    store_mock = mocker.patch(f"{derived_retriever_module_path}._store")
 
     main()
 
