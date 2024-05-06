@@ -1,4 +1,7 @@
+import logging
+import time
 from datetime import datetime
+from typing import Callable
 
 import yaml
 
@@ -39,3 +42,21 @@ def iso_to_utc_datetime(s: str) -> datetime:
     """Convert an ISO 8601 string to a datetime object."""
 
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def poll(maximum_retries: int, delay: float, fail_message: str):
+    """Decorator to poll a function until it does not raise an exception."""
+
+    def decorator(func: Callable) -> Callable:
+        def wrapper(*args, **kwargs):
+            for attempt in range(maximum_retries):
+                try:
+                    return func(*args, **kwargs)
+
+                except Exception as e:
+                    logging.error(f"{fail_message} (attempt {attempt + 1}/{maximum_retries}): {e}")
+                    time.sleep(delay)
+
+        return wrapper
+
+    return decorator
