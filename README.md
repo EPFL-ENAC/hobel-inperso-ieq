@@ -49,6 +49,8 @@ This can be done by putting the variables in an `.env` file and then running
 export $(cat .env)
 ```
 
+API keys for the sensor (Airly, Airthings, uHoo) and survey (Qualtrics) services can be requested from the HOBEL laboratory.
+
 
 ## Command line usage
 
