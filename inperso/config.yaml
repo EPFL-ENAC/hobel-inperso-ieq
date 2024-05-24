@@ -38,5 +38,4 @@ from_env:
 
   db:
     host: INFLUX_HOST
-    port: INFLUX_PORT
     token: INFLUX_TOKEN

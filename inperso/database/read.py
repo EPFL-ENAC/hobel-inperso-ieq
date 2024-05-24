@@ -8,7 +8,7 @@ from inperso import config
 
 def get_query_api():
     client = InfluxDBClient(
-        url=config.db["url"],
+        url=config.db["host"],
         token=config.db["token"],
         org=config.db["org"],
         enable_gzip=True,
