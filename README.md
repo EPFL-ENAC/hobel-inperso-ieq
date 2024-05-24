@@ -34,7 +34,9 @@ pip install -e .[dev]
 
 Export the following environment variables:
 
+- `INFLUX_BUCKET=bucket`
 - `INFLUX_HOST` (such as `http://db.com:8086`)
+- `INFLUX_ORG=enac`
 - `INFLUX_TOKEN`
 
 This can be done by putting the variables in an `.env` file and then running
@@ -76,7 +78,9 @@ Export the following environment variables:
 - `AIRTHINGS_API_KEY`
 - `UHOO_CLIENT_ID`
 - `QUALTRICS_API_KEY`
+- `INFLUX_BUCKET=bucket`
 - `INFLUX_HOST`
+- `INFLUX_ORG=enac`
 - `INFLUX_TOKEN`
 
 This can be done by putting the variables in an `.env` file and then running
