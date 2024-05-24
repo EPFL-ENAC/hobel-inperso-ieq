@@ -6,6 +6,7 @@ from typing import Optional
 
 from inperso import config
 from inperso.database.read import query
+from inperso.tags import tags
 
 
 def fetch(
@@ -35,6 +36,12 @@ def fetch(
             Defaults to None, which retrieves data from all devices.
         fields (list[str], optional): List of fields to retrieve data from.
             Defaults to None, which retrieves data from all fields.
+        **kwargs: Additional tags filters:
+            - "dc" (list[str])
+            - "address" (list[str])
+            - "floor" (list[str])
+            - "unit_number" (list[str])
+            - "room" (list[str])
 
     Returns:
         list[dict]: List of dictionaries containing the data, with the keys:
@@ -48,6 +55,7 @@ def fetch(
     query_str += _get_brands_filter(brands)
     query_str += _get_devices_filter(devices)
     query_str += _get_fields_filter(fields)
+    query_str += _get_tags_filter(**kwargs)
     query_str += _get_moving_average_filter(frequency, window_size)
     query_str += '|> keep(columns: ["_time", "_value", "_field", "device"])'
 
@@ -116,3 +124,30 @@ def _get_fields_filter(fields: Optional[list[str]] = None) -> str:
         return ""
 
     return f'|> filter(fn: (r) => r["_field"] =~ /({"|".join(fields)})/)'
+
+
+def _get_tags_filter(**kwargs) -> str:
+    tag_keys = tags.keys()  # ex: "Unit Number"
+    possible_kwarg_keys = [key.lower().replace(" ", "_") for key in tag_keys]  # ex: "unit_number"
+    kwarg_to_tag_key = dict(zip(possible_kwarg_keys, tag_keys))  # ex: {"unit_number": "Unit Number"}
+
+    devices = set()
+
+    for kwarg_key, values in kwargs.items():
+        if kwarg_key not in possible_kwarg_keys:
+            raise ValueError(f"Invalid tag key: '{kwarg_key}'. Must be one of: {possible_kwarg_keys}")
+
+        tag_key = kwarg_to_tag_key[kwarg_key]
+
+        for value in values:
+            if value not in tags[tag_key]:
+                raise ValueError(
+                    f"Invalid tag value: '{value}' for tag key: '{tag_key}'. Must be one of: {list(tags[tag_key].keys())}"
+                )
+
+            devices.update(set(tags[tag_key][value]))
+
+    if len(devices) == 0:
+        return ""
+
+    return f'|> filter(fn: (r) => r["device"] =~ /({"|".join(devices)})/)'
