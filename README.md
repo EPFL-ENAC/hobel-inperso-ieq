@@ -30,7 +30,44 @@ pip install -e .[dev]
 ```
 
 
-# 🏎 Usage
+# 👨‍💻 Fetching data from the database
+
+Export the following environment variables:
+
+- `INFLUX_HOST` (such as `http://db.com:8086`)
+- `INFLUX_TOKEN`
+
+This can be done by putting the variables in an `.env` file and then running
+
+```
+export $(cat .env)
+```
+
+Then, in a Python script or notebook you can use the `fetch` function to retrieve data from the database:
+
+```
+from datetime import datetime
+import pandas as pd
+from inperso import fetch
+
+data = fetch(
+    datetime_start = datetime(2024, 1, 1),
+    datetime_end = datetime.now(),
+    frequency = "1h",
+    window_size = "1d",
+    brands = ["airly", "airthings", "uhoo"],
+    fields = ["pressure", "airPressure"],
+    room = ["bedroom", "kitchen"],
+    # ...
+)
+
+df = pd.DataFrame(data)
+```
+
+Run `help(fetch)` to get more info on the available filters.
+
+
+# ⛏️ Populating the database with data from the APIs
 
 Export the following environment variables:
 
@@ -40,7 +77,6 @@ Export the following environment variables:
 - `UHOO_CLIENT_ID`
 - `QUALTRICS_API_KEY`
 - `INFLUX_HOST`
-- `INFLUX_PORT`
 - `INFLUX_TOKEN`
 
 This can be done by putting the variables in an `.env` file and then running
@@ -52,7 +88,7 @@ export $(cat .env)
 
 ## Command line usage
 
-To retrieve all the latest samples for all sensors and surveys, run in your terminal:
+To retrieve all the latest samples for all sensors and surveys and store them in the database, run in your terminal:
 
 ```
 inperso-retrieve
@@ -107,7 +143,7 @@ retriever.fetch_from_file("path/to/file.csv")
 ```
 
 
-# 🛢️ Populating the database
+## 🛢️ Steps to populate the database
 
 To fill the database with historical data, follow these steps for each kind of sensor.
 
