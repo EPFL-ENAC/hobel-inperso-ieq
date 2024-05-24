@@ -1,10 +1,11 @@
 import logging
 
-from . import config, data_acquisition, utils
+from . import config, data_acquisition, database, utils
 
 __all__ = [
     "config",
     "data_acquisition",
+    "database",
     "utils",
 ]
 

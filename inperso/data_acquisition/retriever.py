@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 
 from inperso import config
-from inperso.data_acquisition.read_db import query
-from inperso.data_acquisition.write_db import WriteQuery, write
+from inperso.database.read import query
+from inperso.database.write import WriteQuery, write
 
 
 class Retriever(ABC):
