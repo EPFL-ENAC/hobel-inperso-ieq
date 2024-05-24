@@ -32,4 +32,17 @@ def fetch(
     )
 
     result = query(query_str)
-    return result
+    values = [record.values for table in result for record in table.records]
+
+    # Remove "result" and "table" keys
+    values = [
+        {
+            "time": record["_time"],
+            "value": record["_value"],
+            "field": record["_field"],
+            "device": record["device"],
+        }
+        for record in values
+    ]
+
+    return values
