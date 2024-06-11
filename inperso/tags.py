@@ -13,7 +13,7 @@ header = []
 data = []
 
 with open(filepath, mode="r") as file:
-    reader = csv.reader(file, delimiter=";")
+    reader = csv.reader(file, delimiter=",")
     header = next(reader)
 
     for row in reader:
