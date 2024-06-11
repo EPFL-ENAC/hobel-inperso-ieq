@@ -1,8 +1,10 @@
 """Get lists of devices associated to tags from a CSV file of tags."""
 
 import csv
+import os
 
-filepath = "data/tags.csv"
+package_path = os.path.dirname(__file__)
+filepath = os.path.join(package_path, "..", "data", "tags.csv")
 device_name_column = 1
 
 
