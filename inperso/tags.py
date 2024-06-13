@@ -3,8 +3,8 @@
 import csv
 import os
 
-package_path = os.path.dirname(__file__)
-filepath = os.path.join(package_path, "..", "data", "tags.csv")
+package_path = os.path.dirname(os.path.abspath(__file__))
+filepath = os.path.join(package_path, "data", "tags.csv")
 device_name_column = 1
 
 
