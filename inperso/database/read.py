@@ -1,5 +1,7 @@
 import logging
 import time
+from datetime import datetime
+from typing import Optional
 
 from influxdb_client import InfluxDBClient
 
@@ -36,3 +38,20 @@ def query(query: str):
             time.sleep(config.db["query_retry_delay_seconds"])
 
     return response
+
+
+def get_datetime_filter(
+    datetime_start: Optional[datetime] = None,
+    datetime_end: Optional[datetime] = None,
+) -> str:
+    """Get a query substring to filter data by datetime range."""
+
+    if datetime_start is None:
+        datetime_start = datetime.fromtimestamp(0)
+    timestamp_start = int(datetime_start.timestamp())
+
+    if datetime_end is None:
+        datetime_end = datetime.now()
+    timestamp_end = int(datetime_end.timestamp())
+
+    return f"|> range(start: {timestamp_start}, stop: {timestamp_end})"

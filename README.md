@@ -32,7 +32,7 @@ pip install -e .[dev]
 
 # 👨‍💻 Fetching data from the database
 
-Export the following environment variables:
+First, export the following environment variables:
 
 - `INFLUX_BUCKET=bucket`
 - `INFLUX_HOST` (such as `http://db.com:8086`)
@@ -45,7 +45,10 @@ This can be done by putting the variables in an `.env` file and then running
 export $(cat .env)
 ```
 
-Then, in a Python script or notebook you can use the `fetch` function to retrieve data from the database:
+
+## Sensor data
+
+In a Python script or notebook you can use the `fetch` function to retrieve data from the database:
 
 ```
 from datetime import datetime
@@ -67,6 +70,25 @@ df = pd.DataFrame(data)
 ```
 
 Run `help(fetch)` to get more info on the available filters.
+
+
+## Survey data
+
+To fetch survey data, use the `fetch_surveys` function:
+
+```
+import pandas as pd
+from inperso import fetch_surveys
+
+data = fetch_surveys(
+    surveys = ["survey1", "survey2"],
+    # ...
+)
+
+df = pd.DataFrame(data)
+```
+
+Use the `get_survey_names` function to get the list of available surveys. It is also possible to filter the surveys by date using the `datetime_start` and `datetime_end` arguments.
 
 
 # ⛏️ Populating the database with data from the APIs

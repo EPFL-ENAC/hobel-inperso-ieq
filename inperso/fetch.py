@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional
 
 from inperso import config
-from inperso.database.read import query
+from inperso.database.read import get_datetime_filter, query
 from inperso.tags import tags
 
 
@@ -51,7 +51,7 @@ def fetch(
             - "device" (str)
     """
     query_str = f'from(bucket:"{config.db["bucket"]}")'
-    query_str += _get_datetime_filter(datetime_start, datetime_end)
+    query_str += get_datetime_filter(datetime_start, datetime_end)
     query_str += _get_brands_filter(brands)
     query_str += _get_devices_filter(devices)
     query_str += _get_fields_filter(fields)
@@ -75,21 +75,6 @@ def fetch(
     ]
 
     return values
-
-
-def _get_datetime_filter(
-    datetime_start: Optional[datetime] = None,
-    datetime_end: Optional[datetime] = None,
-) -> str:
-    if datetime_start is None:
-        datetime_start = datetime.fromtimestamp(0)
-    timestamp_start = int(datetime_start.timestamp())
-
-    if datetime_end is None:
-        datetime_end = datetime.now()
-    timestamp_end = int(datetime_end.timestamp())
-
-    return f"|> range(start: {timestamp_start}, stop: {timestamp_end})"
 
 
 def _get_moving_average_filter(
