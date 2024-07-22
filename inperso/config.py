@@ -53,3 +53,6 @@ airly = config["airly"]
 airthings = config["airthings"]
 qualtrics = config["qualtrics"]
 uhoo = config["uhoo"]
+
+# Field names synonyms
+field_synonyms = config["field_synonyms"]

@@ -36,12 +36,15 @@ def fetch(
             Defaults to None, which retrieves data from all devices.
         fields (list[str], optional): List of fields to retrieve data from.
             Defaults to None, which retrieves data from all fields.
+            Some fields have synonyms (e.g. "temperature" and "temp"). Requesting a field with synonyms will fetch data
+            for all synonyms. See `inperso.config.field_synonyms` for the list of synonyms.
         **kwargs: Additional tags filters:
             - "dc" (list[str])
             - "address" (list[str])
             - "floor" (list[str])
             - "unit_number" (list[str])
             - "room" (list[str])
+            See `inperso.tags.tags` for the list of possible values for each tag.
 
     Returns:
         list[dict]: List of dictionaries containing the data, with the keys:
@@ -73,6 +76,8 @@ def fetch(
         }
         for record in values
     ]
+
+    _replace_fields_with_unique_synonym(values)
 
     return values
 
@@ -108,7 +113,19 @@ def _get_fields_filter(fields: Optional[list[str]] = None) -> str:
     if fields is None:
         return ""
 
+    fields = _get_fields_with_synonyms(fields)
     return f'|> filter(fn: (r) => r["_field"] =~ /({"|".join(fields)})/)'
+
+
+def _get_fields_with_synonyms(fields: list[str]) -> list[str]:
+    fields_with_synonyms = set(fields)
+
+    for field in fields:
+        for synonmys in config.field_synonyms.values():
+            if field in synonmys:
+                fields_with_synonyms.update(synonmys)
+
+    return list(fields_with_synonyms)
 
 
 def _get_tags_filter(**kwargs) -> str:
@@ -136,3 +153,10 @@ def _get_tags_filter(**kwargs) -> str:
         return ""
 
     return f'|> filter(fn: (r) => r["device"] =~ /({"|".join(devices)})/)'
+
+
+def _replace_fields_with_unique_synonym(values: list[dict]) -> None:
+    synonyms = {field: synonym for synonym, fields in config.field_synonyms.items() for field in fields}
+
+    for value in values:
+        value["field"] = synonyms.get(value["field"], value["field"])

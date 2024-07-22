@@ -22,6 +22,17 @@ db:
   minimum_write_batch_size: 10000
   query_retry_delay_seconds: 5
 
+field_synonyms:
+  o3:
+    - o3
+    - ozone
+  pressure:
+    - airPressure
+    - pressure
+  temperature:
+    - temp
+    - temperature
+
 from_env:
   airly:
     api_key: AIRLY_API_KEY

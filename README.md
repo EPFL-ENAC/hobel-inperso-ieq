@@ -61,7 +61,7 @@ data = fetch(
     frequency = "1h",
     window_size = "1d",
     brands = ["airly", "airthings", "uhoo"],
-    fields = ["pressure", "airPressure"],
+    fields = ["pressure"],
     room = ["bedroom", "kitchen"],
     # ...
 )
