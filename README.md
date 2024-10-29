@@ -14,16 +14,14 @@ The project aims to advance the knowledge of indoor environmental quality (IEQ)
 
 ## For users
 
-```
-git clone https://github.com/EPFL-ENAC/hobel-inperso-ieq.git
-cd hobel-inperso-ieq
-pip install .
+```bash
+pip install git+https://github.com/EPFL-ENAC/hobel-inperso-ieq.git
 ```
 
 
 ## For developers
 
-```
+```bash
 git clone git@github.com:EPFL-ENAC/hobel-inperso-ieq.git
 cd hobel-inperso-ieq
 pip install -e .[dev]
@@ -32,17 +30,20 @@ pip install -e .[dev]
 
 # 👨‍💻 Fetching data from the database
 
-First, export the following environment variables:
+At the root of your project, create a `.env` file with the following content:
 
-- `INFLUX_BUCKET=bucket`
-- `INFLUX_HOST` (such as `https://inperso-ieq-db-dev.epfl.ch:443`)
-- `INFLUX_ORG=enac`
-- `INFLUX_TOKEN`
-
-This can be done by putting the variables in an `.env` file and then running
-
+```bash
+INFLUX_HOST=https://inperso-ieq-db-dev.epfl.ch:443
+INFLUX_TOKEN=your_token
 ```
-export $(cat .env)
+
+Alternatively, you can set the environment variables directly in your script or notebook:
+
+```python
+import inperso
+
+inperso.config.db["host"] = "https://inperso-ieq-db-dev.epfl.ch:443"
+inperso.config.db["token"] = "your_token"
 ```
 
 
@@ -50,12 +51,12 @@ export $(cat .env)
 
 In a Python script or notebook you can use the `fetch` function to retrieve data from the database:
 
-```
+```python
 from datetime import datetime
-import pandas as pd
-from inperso import fetch
+import pandas as pd  # Optional, if you want to convert the data into a DataFrame
+import inperso
 
-data = fetch(
+data = inperso.fetch(
     datetime_start = datetime(2024, 1, 1),
     datetime_end = datetime.now(),
     frequency = "1h",
@@ -66,7 +67,7 @@ data = fetch(
     # ...
 )
 
-df = pd.DataFrame(data)
+df = pd.DataFrame(data)  # Optional
 ```
 
 Run `help(fetch)` to get more info on the available filters.
@@ -76,16 +77,16 @@ Run `help(fetch)` to get more info on the available filters.
 
 To fetch survey data, use the `fetch_surveys` function:
 
-```
-import pandas as pd
-from inperso import fetch_surveys
+```python
+import pandas as pd  # Optional, if you want to convert the data into a DataFrame
+import inperso
 
-data = fetch_surveys(
+data = inperso.fetch_surveys(
     surveys = ["survey1", "survey2"],
     # ...
 )
 
-df = pd.DataFrame(data)
+df = pd.DataFrame(data)  # Optional
 ```
 
 Use the `get_survey_names` function to get the list of available surveys. It is also possible to filter the surveys by date using the `datetime_start` and `datetime_end` arguments.
@@ -93,22 +94,18 @@ Use the `get_survey_names` function to get the list of available surveys. It is 
 
 # ⛏️ Populating the database with data from the APIs
 
-Export the following environment variables:
+At the root of your project, create a `.env` file with the following variables:
 
-- `AIRLY_API_KEY`
-- `AIRTHINGS_API_ID`
-- `AIRTHINGS_API_KEY`
-- `UHOO_CLIENT_ID`
-- `QUALTRICS_API_KEY`
-- `INFLUX_BUCKET=bucket`
-- `INFLUX_HOST`
-- `INFLUX_ORG=enac`
-- `INFLUX_TOKEN`
-
-This can be done by putting the variables in an `.env` file and then running
-
-```
-export $(cat .env)
+```bash
+AIRLY_API_KEY=...
+AIRTHINGS_API_ID=...
+AIRTHINGS_API_KEY=...
+UHOO_CLIENT_ID=...
+QUALTRICS_API_KEY=...
+INFLUX_BUCKET=bucket
+INFLUX_HOST=...
+INFLUX_ORG=enac
+INFLUX_TOKEN=...
 ```
 
 
@@ -116,7 +113,7 @@ export $(cat .env)
 
 To retrieve all the latest samples for all sensors and surveys and store them in the database, run in your terminal:
 
-```
+```bash
 inperso-retrieve
 ```
 
@@ -127,7 +124,7 @@ inperso-retrieve
 
 To manually retrieve recent samples in a Python shell or notebook, run the following script:
 
-```
+```python
 import inperso
 
 retriever = inperso.data_acquisition.AirlyRetriever()
@@ -146,7 +143,7 @@ Replace `AirlyRetriever` by the desired sensor or survey type, taken from:
 
 To fetch samples between two particular dates, run:
 
-```
+```python
 import inperso
 from datetime import datetime, timedelta, timezone
 
@@ -161,7 +158,7 @@ retriever.fetch(datetime_start, datetime_end)
 
 To fetch samples from a file, run:
 
-```
+```python
 import inperso
 
 retriever = inperso.data_acquisition.AirlyRetriever()
@@ -197,13 +194,13 @@ To fill the database with historical data, follow these steps for each kind of s
 
 # ✅ Run tests
 
-```
+```bash
 pytest
 ```
 
 
 # 🩺 Run code checks
 
-```
+```bash
 pre-commit run --all-files
 ```

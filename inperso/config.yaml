@@ -48,5 +48,7 @@ from_env:
     client_id: UHOO_CLIENT_ID
 
   db:
+    bucket: INFLUX_BUCKET
     host: INFLUX_HOST
+    org: INFLUX_ORG
     token: INFLUX_TOKEN
