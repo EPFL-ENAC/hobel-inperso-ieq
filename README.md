@@ -35,7 +35,7 @@ pip install -e .[dev]
 First, export the following environment variables:
 
 - `INFLUX_BUCKET=bucket`
-- `INFLUX_HOST` (such as `http://db.com:8086`)
+- `INFLUX_HOST` (such as `https://inperso-ieq-db-dev.epfl.ch:443`)
 - `INFLUX_ORG=enac`
 - `INFLUX_TOKEN`
 
