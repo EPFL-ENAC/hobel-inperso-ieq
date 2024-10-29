@@ -49,7 +49,7 @@ inperso.config.db["token"] = "your_token"
 
 ## Sensor data
 
-In a Python script or notebook you can use the `fetch` function to retrieve data from the database:
+In a Python script or notebook you can use the `fetch` function to retrieve data from the database, potentially resampled:
 
 ```python
 from datetime import datetime
@@ -70,7 +70,7 @@ data = inperso.fetch(
 df = pd.DataFrame(data)  # Optional
 ```
 
-Run `help(fetch)` to get more info on the available filters.
+Run `help(inperso.fetch)` to get more info on the available filters.
 
 
 ## Survey data
@@ -89,7 +89,7 @@ data = inperso.fetch_surveys(
 df = pd.DataFrame(data)  # Optional
 ```
 
-Use the `get_survey_names` function to get the list of available surveys. It is also possible to filter the surveys by date using the `datetime_start` and `datetime_end` arguments.
+Use the `inperso.get_survey_names()` function to get the list of available surveys. It is also possible to filter the surveys by date using the `datetime_start` and `datetime_end` arguments.
 
 
 # ⛏️ Populating the database with data from the APIs
