@@ -2,7 +2,11 @@
 
 import os
 
+from dotenv import load_dotenv
+
 from inperso.utils import load_yaml, update_dict_nested
+
+load_dotenv()
 
 
 def load_config() -> dict:
