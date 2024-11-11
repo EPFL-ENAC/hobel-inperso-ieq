@@ -15,7 +15,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.4.0"
+      "version": "11.3.0"
     },
     {
       "type": "datasource",
@@ -69,6 +69,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -132,13 +133,14 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.0",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] =~ /${brand:regex}/)\r\n  |> filter(fn: (r) => r[\"_field\"] =~ /${field:regex}/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /${device:regex}/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${dc:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${address:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${floor:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${unit:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${room:pipe})/)\r\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"device\"])",
+          "query": "from(bucket: \"bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] =~ /^${brand:regex}$/)\r\n  |> filter(fn: (r) => r[\"_field\"] =~ /^${field:regex}$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^${device:regex}$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${dc:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${address:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${floor:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${unit:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${room:pipe})$/)\r\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"device\"])",
           "refId": "A"
         }
       ],
@@ -162,6 +164,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -225,13 +228,14 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.3.0",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] =~ /${brand:regex}/)\r\n  |> filter(fn: (r) => r[\"_field\"] =~ /${field:regex}/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /${device:regex}/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${dc:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${address:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${floor:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${unit:pipe})/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /(${room:pipe})/)\r\n  |> timedMovingAverage(every: 6h, period: 1d)\r\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"device\"])",
+          "query": "from(bucket: \"bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] =~ /^${brand:regex}$/)\r\n  |> filter(fn: (r) => r[\"_field\"] =~ /^${field:regex}$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^${device:regex}$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${dc:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${address:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${floor:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${unit:pipe})$/)\r\n  |> filter(fn: (r) => r[\"device\"] =~ /^(${room:pipe})$/)\r\n  |> timedMovingAverage(every: 6h, period: 1d)\r\n  |> keep(columns: [\"_time\", \"_value\", \"_field\", \"device\"])",
           "refId": "A"
         }
       ],
@@ -239,7 +243,8 @@
       "type": "timeseries"
     }
   ],
-  "schemaVersion": 39,
+  "refresh": "",
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
@@ -250,7 +255,6 @@
           "uid": "${DS_INFLUXDB}"
         },
         "definition": "import \"influxdata/influxdb/v1\"\r\nv1.measurements(bucket: v.bucket)\r\n  |> filter(fn: (r) => r._value != \"qualtrics\")",
-        "hide": 0,
         "includeAll": false,
         "label": "Brand",
         "multi": true,
@@ -259,7 +263,6 @@
         "query": "import \"influxdata/influxdb/v1\"\r\nv1.measurements(bucket: v.bucket)\r\n  |> filter(fn: (r) => r._value != \"qualtrics\")",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "sort": 1,
         "type": "query"
       },
@@ -270,7 +273,6 @@
           "uid": "${DS_INFLUXDB}"
         },
         "definition": "import \"influxdata/influxdb/schema\"\r\nschema.fieldKeys(\r\n  bucket: \"bucket\",\r\n  predicate: (r) => r._measurement != \"qualtrics\",\r\n  start: 0,\r\n  stop: now(),\r\n)",
-        "hide": 0,
         "includeAll": false,
         "label": "Field",
         "multi": true,
@@ -279,7 +281,6 @@
         "query": "import \"influxdata/influxdb/schema\"\r\nschema.fieldKeys(\r\n  bucket: \"bucket\",\r\n  predicate: (r) => r._measurement != \"qualtrics\",\r\n  start: 0,\r\n  stop: now(),\r\n)",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "sort": 5,
         "type": "query"
       },
@@ -291,7 +292,6 @@
           "uid": "${DS_INFLUXDB}"
         },
         "definition": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n  bucket: \"bucket\",\r\n  tag: \"device\",\r\n  predicate: (r) => r._measurement != \"qualtrics\",\r\n  start: 0,\r\n  stop: now(),\r\n)",
-        "hide": 0,
         "includeAll": true,
         "label": "Device",
         "multi": true,
@@ -300,32 +300,24 @@
         "query": "import \"influxdata/influxdb/schema\"\r\nschema.tagValues(\r\n  bucket: \"bucket\",\r\n  tag: \"device\",\r\n  predicate: (r) => r._measurement != \"qualtrics\",\r\n  start: 0,\r\n  stop: now(),\r\n)",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "sort": 7,
         "type": "query"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
           "text": [
-            "All"
+            "$__all"
           ],
           "value": [
             "$__all"
           ]
         },
-        "hide": 0,
         "includeAll": true,
         "label": "DC",
         "multi": true,
         "name": "dc",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "1",
@@ -343,32 +335,23 @@
           }
         ],
         "query": "1 : 115452|Airthings - 1|Airthings - 2|Airthings - 3|Airtings - 4|Airthings - 5|Airthings - 6|Airthings - 7|Airthings - 8|Airthings - 9|Airthings - 10|Airthings - 11|Airthings - 12|Airthings - 13|Airthings - 14|Airthings - 15|Airthings - 16|Airthings - 17|Airthings - 18|Airthings - 21|Airthings - 22|Airthings - 23|Airthings - 24|Airthings - 25|Airthings - 26|Airthings - 27|Airthings - 28|Airthings - 29|Airthings - 30|uHoo-1|uHoo-2|uHoo-3|uHoo-4|uHoo-5|uHoo-6|uHoo-7|uHoo-8|uHoo-9|uHoo-10, 2 : 115537|115538|116481|Airthings - 31|Airthings - 32|Airthings - 33|Airthings - 34|Airthings - 35|Airthings - 36|Airthings - 37|Airthings - 38|Airthings - 39|Airthings - 40|Airthings - 41|Airthings - 42|Airthings - 43|Airthings - 44|Airthings - 45|Airthings - 46|Airthings - 47|Airthings - 48|Airthings - 49|Airthings - 50|Airthings - 51|Airthings - 52|Airthings - 53|Airthings - 54|Airthings - 55|Airthings - 56|Airthings - 57|Airthings - 58|Airthings - 59|Airthings - 60|Airthings - 61|Airthings - 62|Airthings - 63|Airthings - 64|Airthings - 65|uHoo-11|uHoo- 12|uHoo - 13|uHoo-14, 3 : 115548|Airthings - 66|Airthings - 67|Airthings - 68|Airthings - 69|Airthings - 70|Airthings - 71|Airthings- 72|Airthings - 74|Airthings - 75|Airthings - 76|Airthings - 77|Airthings - 78|Airthings - 79|Airthings - 80|Airthings - 81|Airthings - 82|Airthings - 83|Airthings - 84|Airthings - 85|Airthings - 86|Airthings - 87|Airthings - 88|Airthings - 89|uHoo - 15|uHoo - 16|uHoo - 17|uHoo - 19|uHoo - 20|uHoo - 21|uHoo - 22",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
           "text": [
-            "All"
+            "$__all"
           ],
           "value": [
             "$__all"
           ]
         },
-        "hide": 0,
         "includeAll": true,
         "label": "Address",
         "multi": true,
         "name": "address",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "Bronckhost",
@@ -401,32 +384,23 @@
           }
         ],
         "query": "Bronckhost : 115537|Airthings - 31|Airthings - 32|Airthings - 33|Airthings - 34|Airthings - 35|Airthings - 36|Airthings - 37|Airthings - 38|Airthings - 39|Airthings - 40|Airthings - 41|Airthings - 42|Airthings - 43|Airthings - 44|Airthings - 45|Airthings - 46|Airthings - 47|Airthings - 48|Airthings - 49|Airthings - 50|Airthings - 51|Airthings - 52|Airthings - 53|Airthings - 54|Airthings - 55|uHoo-11|uHoo- 12|uHoo - 13|uHoo-14, Calle Estrella 4 : Airthings - 1|Airthings - 2|Airthings - 3|Airthings - 7|Airthings - 8|Airthings - 9|Airthings - 13|Airthings - 14|Airthings - 15|Airthings - 22|Airthings - 23|Airthings - 24|Airthings - 25|Airthings - 26|Airthings - 27|uHoo-1|uHoo-3|uHoo-5|uHoo-8|uHoo-9, Calle Estrella 4-6 : 115452, Calle Estrella 6 : Airtings - 4|Airthings - 5|Airthings - 6|Airthings - 10|Airthings - 11|Airthings - 12|Airthings - 16|Airthings - 17|Airthings - 18|Airthings - 21|Airthings - 28|Airthings - 29|Airthings - 30|uHoo-2|uHoo-4|uHoo-6|uHoo-7|uHoo-10, Emmaus : 115538|Airthings - 56|Airthings - 57|Airthings - 58|Airthings - 59|Airthings - 60|Airthings - 61|Airthings - 62|Airthings - 63|Airthings - 64|Airthings - 65, VVV Social Shelter : 115548|Airthings - 66|Airthings - 67|Airthings - 68|Airthings - 69|Airthings - 70|Airthings - 71|Airthings- 72|Airthings - 74|Airthings - 75|Airthings - 76|Airthings - 77|Airthings - 78|Airthings - 79|Airthings - 80|Airthings - 81|Airthings - 82|Airthings - 83|Airthings - 84|Airthings - 85|Airthings - 86|Airthings - 87|Airthings - 88|Airthings - 89|uHoo - 15|uHoo - 16|uHoo - 17|uHoo - 19|uHoo - 20|uHoo - 21|uHoo - 22",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
           "text": [
-            "All"
+            "$__all"
           ],
           "value": [
             "$__all"
           ]
         },
-        "hide": 0,
         "includeAll": true,
         "label": "Floor",
         "multi": true,
         "name": "floor",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "0",
@@ -454,32 +428,23 @@
           }
         ],
         "query": "0 : Airthings - 64|Airthings - 65|Airthings - 66|Airthings - 67|Airthings - 68|Airthings - 69|Airthings - 70|Airthings - 71|Airthings- 72|Airthings - 74|Airthings - 75|Airthings - 76|uHoo - 15|uHoo - 16, 1 : Airthings - 1|Airthings - 2|Airthings - 3|Airtings - 4|Airthings - 5|Airthings - 6|Airthings - 31|Airthings - 32|Airthings - 33|Airthings - 34|Airthings - 35|Airthings - 36|Airthings - 37|Airthings - 38|Airthings - 39|Airthings - 40|Airthings - 41|Airthings - 42|Airthings - 43|Airthings - 44|Airthings - 45|Airthings - 46|Airthings - 47|Airthings - 48|Airthings - 56|Airthings - 57|Airthings - 58|Airthings - 59|Airthings - 60|Airthings - 61|Airthings - 62|Airthings - 63|Airthings - 77|Airthings - 78|Airthings - 79|Airthings - 80|Airthings - 81|Airthings - 82|Airthings - 83|Airthings - 84|Airthings - 85|Airthings - 86|Airthings - 87|Airthings - 88|Airthings - 89|uHoo-1|uHoo-2|uHoo-11|uHoo- 12|uHoo - 13|uHoo-14|uHoo - 17|uHoo - 19|uHoo - 20|uHoo - 21|uHoo - 22, 2 : Airthings - 7|Airthings - 8|Airthings - 9|Airthings - 10|Airthings - 11|Airthings - 12|Airthings - 49|Airthings - 50|Airthings - 51|Airthings - 52|Airthings - 53|Airthings - 54|Airthings - 55|uHoo-3|uHoo-4, 3 : Airthings - 13|Airthings - 14|Airthings - 15|Airthings - 16|Airthings - 17|Airthings - 18|Airthings - 21|uHoo-5|uHoo-6|uHoo-7, 4 : Airthings - 22|Airthings - 23|Airthings - 24|Airthings - 25|Airthings - 26|Airthings - 27|Airthings - 28|Airthings - 29|Airthings - 30|uHoo-8|uHoo-9|uHoo-10",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
           "text": [
-            "All"
+            "$__all"
           ],
           "value": [
             "$__all"
           ]
         },
-        "hide": 0,
         "includeAll": true,
         "label": "Unit number",
         "multi": true,
         "name": "unit",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "1-01",
@@ -792,32 +757,23 @@
           }
         ],
         "query": "1-01 : Airthings - 31, 1-16 : Airthings - 46, 1-17 : Airthings - 47, 1-18 : Airthings - 48, 1-21 : Airthings - 41, 1-22 : Airthings - 42, 1-23 : Airthings - 43, 1-24 : Airthings - 44, 1-25 : Airthings - 45, 1-26 : Airthings - 40, 1-27 : Airthings - 37, 1-28 : Airthings - 36, 1-29 : Airthings - 38, 1-30 : Airthings - 39, 1-31 : Airthings - 35, 1-32 : Airthings - 34, 1-33 : Airthings - 33, 1-34 : Airthings - 32, 1.01 : Airthings - 64, 1.02 : Airthings - 65, 1.26 : uHoo-11, 1.27 : uHoo- 12, 1.29 : uHoo - 13, 1.3 : uHoo-14, 11 : Airthings - 79, 11.1 : Airthings - 77, 11.2 : Airthings - 78|uHoo - 17, 12 : Airthings - 82, 12.1 : Airthings - 80, 12.2 : Airthings - 81|uHoo - 19, 13 : Airthings - 85, 13.1 : Airthings - 83|uHoo - 20, 13.2 : Airthings - 84|uHoo - 21, 14 : Airthings - 89, 14.1 : Airthings - 86, 14.2 : Airthings - 87|uHoo - 22, 14.3 : Airthings - 88, 2-12 : Airthings - 51, 2-15 : Airthings - 52, 2-16 : Airthings - 53, 2-17 : Airthings - 54, 2-19 : Airthings - 55, 2-8 : Airthings - 49, 2-9 : Airthings - 50, 4.1 : Airthings - 1|Airthings - 2|Airthings - 3|uHoo-1, 4.4 : Airthings - 7|Airthings - 8|Airthings - 9|uHoo-3, 4.5 : Airthings - 13|Airthings - 14|Airthings - 15|uHoo-5, 4.7 : Airthings - 22|Airthings - 23|Airthings - 24|uHoo-8, 4.8 : Airthings - 25|Airthings - 26|Airthings - 27|uHoo-9, 44927 : Airthings - 56, 44928 : Airthings - 57, 44929 : Airthings - 58, 44930 : Airthings - 59, 44931 : Airthings - 60, 44932 : Airthings - 61, 44933 : Airthings - 62, 44934 : Airthings - 63, 6.1 : Airtings - 4|Airthings - 5|Airthings - 6|uHoo-2, 6.3 : Airthings - 10|Airthings - 11|Airthings - 12|uHoo-4, 6.5 : Airthings - 16|Airthings - 17|Airthings - 18|uHoo-6, 6.6 : 115452|Airthings - 21|uHoo-7, 6.7 : Airthings - 28|Airthings - 29|Airthings - 30|uHoo-10",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       },
       {
         "allValue": ".*",
         "current": {
-          "selected": true,
           "text": [
-            "All"
+            "$__all"
           ],
           "value": [
             "$__all"
           ]
         },
-        "hide": 0,
         "includeAll": true,
         "label": "Room",
         "multi": true,
         "name": "room",
         "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
           {
             "selected": false,
             "text": "balcony",
@@ -880,8 +836,6 @@
           }
         ],
         "query": "balcony : 115452, bedroom : Airthings - 77|Airthings - 78|Airthings - 80|Airthings - 81|Airthings - 83|Airthings - 84|Airthings - 86|Airthings - 87|Airthings - 88|uHoo - 17|uHoo - 19|uHoo - 20|uHoo - 21|uHoo - 22, common area : Airthings - 79|Airthings - 82|Airthings - 85|Airthings - 89, dining room : Airthings - 74|Airthings - 75, in the room : Airthings - 31|Airthings - 32|Airthings - 33|Airthings - 34|Airthings - 35|Airthings - 36|Airthings - 37|Airthings - 38|Airthings - 39|Airthings - 40|Airthings - 41|Airthings - 42|Airthings - 43|Airthings - 44|Airthings - 45|Airthings - 46|Airthings - 47|Airthings - 48|Airthings - 49|Airthings - 50|Airthings - 51|Airthings - 52|Airthings - 53|Airthings - 54|Airthings - 55|uHoo-11|uHoo- 12|uHoo - 13|uHoo-14, kitchen : Airthings - 3|Airthings - 6|Airthings - 9|Airthings - 12|Airthings - 15|Airthings - 18|Airthings - 21|Airthings - 24|Airthings - 27|Airthings - 30|Airthings - 76, living room : Airthings - 1|Airtings - 4|Airthings - 7|Airthings - 10|Airthings - 13|Airthings - 16|Airthings - 22|Airthings - 25|Airthings - 28|Airthings - 68|Airthings - 69|Airthings - 70|Airthings - 71|uHoo-1|uHoo-2|uHoo-3|uHoo-4|uHoo-5|uHoo-6|uHoo-7|uHoo-8|uHoo-9|uHoo-10|uHoo - 15|uHoo - 16, master bedroom : Airthings - 2|Airthings - 5|Airthings - 8|Airthings - 11|Airthings - 14|Airthings - 17|Airthings - 23|Airthings - 26|Airthings - 29, office 1 : Airthings - 66, office 2 : Airthings - 67, on the roof ? : 115537|115538|115548, reception/lobby : Airthings- 72",
-        "queryValue": "",
-        "skipUrlSync": false,
         "type": "custom"
       }
     ]
@@ -894,6 +848,6 @@
   "timezone": "utc",
   "title": "Sensor data",
   "uid": "bdkdlv1rua7swf",
-  "version": 4,
+  "version": 5,
   "weekStart": "monday"
 }

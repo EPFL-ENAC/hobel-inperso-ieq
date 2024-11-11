@@ -4,6 +4,8 @@
 
 The project aims to advance the knowledge of indoor environmental quality (IEQ) assessment in residential and educational buildings in Europe, develop an improved rating system for IEQ assessment, and understand the impact of building retrofits on Indoor environmental quality and occupants’ comfort.
 
+All retrieved data can be displayed on the [InPerso IEQ Dashboard](https://inperso-ieq-dev.epfl.ch/) (authenticated access).
+
 
 # 📥 Installation
 
