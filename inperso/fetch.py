@@ -99,14 +99,14 @@ def _get_brands_filter(brands: Optional[list[str]] = None) -> str:
     if brands is None:
         return ""
 
-    return f'|> filter(fn: (r) => r["_measurement"] =~ /({"|".join(brands)})/)'
+    return f'|> filter(fn: (r) => r["_measurement"] =~ /^({"|".join(brands)})$/)'
 
 
 def _get_devices_filter(devices: Optional[list[str]] = None) -> str:
     if devices is None:
         return ""
 
-    return f'|> filter(fn: (r) => r["device"] =~ /({"|".join(devices)})/)'
+    return f'|> filter(fn: (r) => r["device"] =~ /^({"|".join(devices)})$/)'
 
 
 def _get_fields_filter(fields: Optional[list[str]] = None) -> str:
@@ -114,7 +114,7 @@ def _get_fields_filter(fields: Optional[list[str]] = None) -> str:
         return ""
 
     fields = _get_fields_with_synonyms(fields)
-    return f'|> filter(fn: (r) => r["_field"] =~ /({"|".join(fields)})/)'
+    return f'|> filter(fn: (r) => r["_field"] =~ /^({"|".join(fields)})$/)'
 
 
 def _get_fields_with_synonyms(fields: list[str]) -> list[str]:
@@ -152,7 +152,7 @@ def _get_tags_filter(**kwargs) -> str:
     if len(devices) == 0:
         return ""
 
-    return f'|> filter(fn: (r) => r["device"] =~ /({"|".join(devices)})/)'
+    return f'|> filter(fn: (r) => r["device"] =~ /^({"|".join(devices)})$/)'
 
 
 def _replace_fields_with_unique_synonym(values: list[dict]) -> None:
