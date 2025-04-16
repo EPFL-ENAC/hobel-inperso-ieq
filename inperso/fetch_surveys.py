@@ -31,8 +31,8 @@ def fetch_surveys(
             - "survey" (str)
             - "time" (datetime)
             - "response_id" (str)
-            - "latitude" (float)
-            - "longitude" (float)
+            - "latitude" (float | None)
+            - "longitude" (float | None)
             - "question" (str)
             - "answer" (any)
     """
@@ -51,8 +51,8 @@ def fetch_surveys(
             "survey": record["survey"],
             "time": record["_time"],
             "response_id": record["response_id"],
-            "latitude": record["latitude"],
-            "longitude": record["longitude"],
+            "latitude": record.get("latitude", None),
+            "longitude": record.get("longitude", None),
             "question": record["_field"],
             "answer": record["_value"],
         }
