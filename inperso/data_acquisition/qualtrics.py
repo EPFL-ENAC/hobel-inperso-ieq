@@ -12,7 +12,7 @@ from inperso import config
 from inperso.data_acquisition.retriever import Retriever
 from inperso.utils import iso_to_utc_datetime, utc_datetime_to_iso
 
-api_url = "https://sjc1.qualtrics.com/API/v3/"
+api_url = "https://eu.qualtrics.com/API/v3/"
 
 
 class QualtricsRetriever(Retriever):
