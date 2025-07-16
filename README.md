@@ -119,6 +119,19 @@ To retrieve all the latest samples for all sensors and surveys and store them in
 inperso-retrieve
 ```
 
+You can also selectively retrieve data for a specific sensor or survey type:
+
+```bash
+inperso-retrieve airly
+```
+
+Replace `airly` by the desired sensor or survey type, taken from:
+
+- `airly`
+- `airthings`
+- `qualtrics`
+- `uhoo`
+
 
 ## Script usage
 
