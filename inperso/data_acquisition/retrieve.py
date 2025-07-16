@@ -21,7 +21,6 @@ def main():
         for name, retriever in retrievers.items():
             try:
                 retriever().fetch_recent()
-                pass
             except Exception as e:
                 logging.error(f"Failed to fetch and store data from {name.capitalize()}: {e}")
                 continue
@@ -30,7 +29,7 @@ def main():
         name = sys.argv[1]
 
         if name not in retrievers:
-            print(f"retriever-name should be one of {list(retrievers.keys())}")
+            print(f"retriever-type should be one of {list(retrievers.keys())}")
             sys.exit(1)
 
         retriever = retrievers[name]
@@ -41,7 +40,7 @@ def main():
             logging.error(f"Failed to fetch and store data from {name.capitalize()}: {e}")
 
     else:
-        print(f"Usage: {sys.argv[0]} [retriever-name]")
+        print(f"Usage: {sys.argv[0]} [retriever-type]")
         sys.exit(1)
 
 
