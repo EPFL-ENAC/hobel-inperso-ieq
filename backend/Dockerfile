@@ -2,4 +2,5 @@ FROM python:3.10
 COPY . /app
 WORKDIR /app
 RUN pip install -e .
-CMD ["inperso-retrieve"]
+ENV INPERSO_FETCH_TYPE=""
+CMD ["sh", "-c", "inperso-retrieve $INPERSO_FETCH_TYPE"]
