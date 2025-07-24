@@ -78,7 +78,7 @@ class Retriever(ABC):
             datetime_start = datetime.now(timezone.utc) - timedelta(hours=1)
 
         else:
-            datetime_start = result[0].records[0].get_time()
+            datetime_start = max(r.records[0].get_time() for r in result)
 
         return datetime_start
 
