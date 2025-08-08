@@ -1,5 +1,6 @@
 import csv
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 
 import requests
@@ -33,39 +34,57 @@ class UhooRetriever(Retriever):
         """Retrieve data from the source."""
 
         token = get_token(config.uhoo["client_id"])
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self._fetch_device_data, token, device, datetime_start, datetime_end)
+                for device in self.devices
+            ]
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    logging.error(f"Error fetching device data: {e}")
 
-        for device in self.devices:
-            device_name = device["deviceName"]
-            device_mac = device["macAddress"]
+    def _fetch_device_data(
+        self,
+        token: str,
+        device: dict,
+        datetime_start: datetime,
+        datetime_end: datetime,
+    ) -> None:
+        """Retrieve data for a single device."""
 
-            try:
-                logging.info(f"Getting Uhoo device data for {device_name} ({device_mac})")
-                device_data = get_device_data(token, device_mac, datetime_start, datetime_end)
+        device_name = device["deviceName"]
+        device_mac = device["macAddress"]
 
-            except RuntimeError:
-                continue
+        try:
+            logging.info(f"Getting Uhoo device data for {device_name} ({device_mac})")
+            device_data = get_device_data(token, device_name, device_mac, datetime_start, datetime_end)
 
-            if device_data == {}:
-                continue
+        except RuntimeError:
+            return
 
-            device_location = device["roomName"]
-            device_floor = device["floorNumber"]
+        if device_data == {}:
+            return
 
-            for entry in device_data["data"]:
-                fields = entry.copy()
-                timestamp = fields.pop("timestamp")
-                fields = dict_ints_to_floats(fields)
+        device_location = device["roomName"]
+        device_floor = device["floorNumber"]
 
-                self.add_write_query({
-                    "measurement": self._measurement_name,
-                    "tags": {
-                        "device": device_name,
-                        "location": device_location,
-                        "floor": device_floor,
-                    },
-                    "fields": fields,
-                    "time": timestamp,
-                })
+        for entry in device_data["data"]:
+            fields = entry.copy()
+            timestamp = fields.pop("timestamp")
+            fields = dict_ints_to_floats(fields)
+
+            self.add_write_query({
+                "measurement": self._measurement_name,
+                "tags": {
+                    "device": device_name,
+                    "location": device_location,
+                    "floor": device_floor,
+                },
+                "fields": fields,
+                "time": timestamp,
+            })
 
     def _fetch_from_file(
         self,
@@ -198,6 +217,7 @@ def get_device_list(access_token: str) -> list:
 
 def get_device_data(
     access_token: str,
+    device_name: str,
     device_mac: str,
     datetime_start: datetime,
     datetime_end: datetime,
@@ -232,7 +252,7 @@ def get_device_data(
     response = requests.post(url, headers=headers, data=data)
 
     if response.status_code == 404:  # No data available
-        logging.warning(f"No data available for {device_mac}")
+        logging.warning(f"No data available for {device_name} ({device_mac})")
         return {}
 
     if response.status_code != 200:
