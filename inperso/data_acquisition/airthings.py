@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -32,51 +33,69 @@ class AirthingsRetriever(Retriever):
         device_list = get_device_list(token)
         logging.info(f"Found {len(device_list)} Airthings devices.")
 
-        for device in device_list:
-            device_id = device["id"]
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self._fetch_device_data, token, device, datetime_start, datetime_end)
+                for device in device_list
+            ]
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    logging.error(f"Error fetching device data: {e}")
 
-            try:
-                device_data = get_device_samples(
-                    access_token=token,
-                    device_id=device_id,
-                    datetime_start=datetime_start,
-                    datetime_end=datetime_end,
-                )
-            except Exception as e:
-                logging.error(f"Failed to get data for device {device_id}: {e}")
-                continue
+    def _fetch_device_data(
+        self,
+        token: str,
+        device: dict,
+        datetime_start: datetime,
+        datetime_end: datetime,
+    ) -> None:
+        """Retrieve data for a single device."""
+        device_id = device["id"]
 
-            device_name = device["segment"]["name"]
-            device_type = device["deviceType"]
-            device_location = device["location"]["name"]
+        try:
+            device_data = get_device_samples(
+                access_token=token,
+                device_id=device_id,
+                datetime_start=datetime_start,
+                datetime_end=datetime_end,
+            )
+        except Exception as e:
+            logging.error(f"Failed to get data for device {device_id}: {e}")
+            return
 
-            for i in range(len(device_data["time"])):
-                fields = {}
+        device_name = device["segment"]["name"]
+        device_type = device["deviceType"]
+        device_location = device["location"]["name"]
 
-                for key in device_data:
-                    if key == "time":
-                        continue
+        for i in range(len(device_data["time"])):
+            fields = {}
 
-                    data = device_data[key][i]
+            for key in device_data:
+                if key == "time":
+                    continue
 
-                    if data is None:
-                        continue
+                data = device_data[key][i]
 
-                    fields[key] = data
+                if data is None:
+                    continue
 
-                timestamp = device_data["time"][i]
-                fields = dict_ints_to_floats(fields)
+                fields[key] = data
 
-                self.add_write_query({
-                    "measurement": self._measurement_name,
-                    "tags": {
-                        "device": device_name,
-                        "type": device_type,
-                        "location": device_location,
-                    },
-                    "fields": fields,
-                    "time": timestamp,
-                })
+            timestamp = device_data["time"][i]
+            fields = dict_ints_to_floats(fields)
+
+            self.add_write_query({
+                "measurement": self._measurement_name,
+                "tags": {
+                    "device": device_name,
+                    "type": device_type,
+                    "location": device_location,
+                },
+                "fields": fields,
+                "time": timestamp,
+            })
 
 
 def get_token(client_id: str, client_secret: str) -> str:
