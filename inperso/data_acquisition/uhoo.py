@@ -75,16 +75,18 @@ class UhooRetriever(Retriever):
             timestamp = fields.pop("timestamp")
             fields = dict_ints_to_floats(fields)
 
-            self.add_write_query({
-                "measurement": self._measurement_name,
-                "tags": {
-                    "device": device_name,
-                    "location": device_location,
-                    "floor": device_floor,
-                },
-                "fields": fields,
-                "time": timestamp,
-            })
+            self.add_write_query(
+                {
+                    "measurement": self._measurement_name,
+                    "tags": {
+                        "device": device_name,
+                        "location": device_location,
+                        "floor": device_floor,
+                    },
+                    "fields": fields,
+                    "time": timestamp,
+                }
+            )
 
     def _fetch_from_file(
         self,
@@ -166,12 +168,14 @@ class UhooRetriever(Retriever):
                 }
                 fields = {k: float(v) for k, v in fields.items() if v != ""}
 
-                self.add_write_query({
-                    "measurement": self._measurement_name,
-                    "tags": tags,
-                    "fields": fields,
-                    "time": timestamp,
-                })
+                self.add_write_query(
+                    {
+                        "measurement": self._measurement_name,
+                        "tags": tags,
+                        "fields": fields,
+                        "time": timestamp,
+                    }
+                )
 
 
 def get_token(client_id: str) -> str:

@@ -68,12 +68,14 @@ class QualtricsRetriever(Retriever):
                 if "locationLongitude" in data:
                     tags["longitude"] = float(data["locationLongitude"])
 
-                self.add_write_query({
-                    "measurement": self._measurement_name,
-                    "tags": tags,
-                    "fields": answers,
-                    "time": date,
-                })
+                self.add_write_query(
+                    {
+                        "measurement": self._measurement_name,
+                        "tags": tags,
+                        "fields": answers,
+                        "time": date,
+                    }
+                )
 
 
 def get_survey_list(api_key: str) -> list[dict]:

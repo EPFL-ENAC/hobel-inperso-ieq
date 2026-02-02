@@ -86,16 +86,18 @@ class AirthingsRetriever(Retriever):
             timestamp = device_data["time"][i]
             fields = dict_ints_to_floats(fields)
 
-            self.add_write_query({
-                "measurement": self._measurement_name,
-                "tags": {
-                    "device": device_name,
-                    "type": device_type,
-                    "location": device_location,
-                },
-                "fields": fields,
-                "time": timestamp,
-            })
+            self.add_write_query(
+                {
+                    "measurement": self._measurement_name,
+                    "tags": {
+                        "device": device_name,
+                        "type": device_type,
+                        "location": device_location,
+                    },
+                    "fields": fields,
+                    "time": timestamp,
+                }
+            )
 
 
 def get_token(client_id: str, client_secret: str) -> str:

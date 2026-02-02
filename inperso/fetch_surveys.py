@@ -75,7 +75,7 @@ def _get_surveys_filter(surveys: Optional[list[str]] = None) -> str:
     # surveys = [re.escape(survey) for survey in surveys]
     # return f'|> filter(fn: (r) => r["survey"] =~ /({"|".join(surveys)})/)'
     conditions = [f'r["survey"] == "{survey}"' for survey in surveys]
-    return f'|> filter(fn: (r) => {" or ".join(conditions)})'
+    return f"|> filter(fn: (r) => {' or '.join(conditions)})"
 
 
 @cache

@@ -66,17 +66,19 @@ class AirlyRetriever(Retriever):
                     fields[field_name] = field_value
 
                 fields = dict_ints_to_floats(fields)
-                self.add_write_query({
-                    "measurement": self._measurement_name,
-                    "tags": {
-                        "device": installation_id,
-                        "location": city,
-                        "latitude": latitude,
-                        "longitude": longitude,
-                    },
-                    "fields": fields,
-                    "time": midpoint_datetime,
-                })
+                self.add_write_query(
+                    {
+                        "measurement": self._measurement_name,
+                        "tags": {
+                            "device": installation_id,
+                            "location": city,
+                            "latitude": latitude,
+                            "longitude": longitude,
+                        },
+                        "fields": fields,
+                        "time": midpoint_datetime,
+                    }
+                )
 
     def _fetch_from_file(self, file_path: str) -> None:
         """Retrieve data from a file."""
@@ -149,12 +151,14 @@ class AirlyRetriever(Retriever):
                 midpoint_datetime = get_midpoint_datetime_from_strings(row["From"], row["Till"])
                 midpoint_datetime = midpoint_datetime.replace(tzinfo=timezone.utc)
 
-                self.add_write_query({
-                    "measurement": self._measurement_name,
-                    "tags": tags,
-                    "fields": fields,
-                    "time": midpoint_datetime,
-                })
+                self.add_write_query(
+                    {
+                        "measurement": self._measurement_name,
+                        "tags": tags,
+                        "fields": fields,
+                        "time": midpoint_datetime,
+                    }
+                )
 
 
 def get_installation_list(api_key: str, sponsor_name: str) -> list[dict]:
