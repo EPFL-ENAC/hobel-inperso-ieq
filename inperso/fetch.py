@@ -93,7 +93,11 @@ def _get_moving_average_filter(
     if frequency is None or window_size is None:
         raise ValueError("Both 'frequency' and 'window_size' must be provided.")
 
-    return f"|> timedMovingAverage(every: {frequency}, period: {window_size})"
+    logging.warning('Using moving average filter. "qualtrics" brand will be excluded.')
+    filter = '|> filter(fn: (r) => r["_measurement"] != "qualtrics")'
+
+    filter += f"|> timedMovingAverage(every: {frequency}, period: {window_size})"
+    return filter
 
 
 def _get_brands_filter(brands: Optional[list[str]] = None) -> str:
