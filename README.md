@@ -11,7 +11,7 @@ All retrieved data can be displayed on the [InPerso IEQ Dashboard](https://inper
 
 ## Requirements
 
-- Python 3.10 minimum
+- Python 3.11 minimum
 
 
 ## For users

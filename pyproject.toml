@@ -12,7 +12,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 pre-commit = { version = "^3.6.2", optional = true }
 pytest = { version = "^8.0.2", optional = true }
 pytest-cov = { version = "^4.1.0", optional = true }
@@ -21,6 +21,7 @@ influxdb-client = "^1.41.0"
 python-dotenv = "^1.0.1"
 pyyaml = "^6.0.1"
 requests = "^2.31.0"
+pandas = "^3.0.0"
 
 [tool.poetry.extras]
 dev = [
