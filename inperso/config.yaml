@@ -22,6 +22,10 @@ db:
   minimum_write_batch_size: 10000
   query_retry_delay_seconds: 5
 
+db_atlas_index:
+  org: enac
+  bucket: atlas_index
+
 field_synonyms:
   o3:
     - o3
@@ -52,3 +56,143 @@ from_env:
     host: INFLUX_HOST
     org: INFLUX_ORG
     token: INFLUX_TOKEN
+
+atlas_index:
+  unit_conversion_factors:
+    uhoo:
+      ch2o: !!python/object/apply:eval [ 30.03 / 24.45 ]
+      co: !!python/object/apply:eval [ 100 * 28.01 / 24.45 ]
+      no2: !!python/object/apply:eval [ 46.01 / 24.45 ]
+      so2: !!python/object/apply:eval [ 100 * 64.07 / 24.45 ]
+      o3: !!python/object/apply:eval [ 48 / 24.45 ]
+
+  thresholds:
+    co2:
+      type: smaller
+      high_score: 800
+      mid_score: 1400
+      low_score: 2000
+      unit: ppm
+    pm25:
+      type: smaller
+      high_score: 5
+      mid_score: 15
+      low_score: 35
+      unit: µg/m3
+    pm10:
+      type: smaller
+      high_score: 15
+      mid_score: 45
+      low_score: 70
+      unit: µg/m3
+    o3:
+      type: smaller
+      high_score: 40
+      mid_score: 60
+      low_score: 100
+      unit: µg/m3
+    ch2o:
+      type: smaller
+      high_score: 10
+      mid_score: 55
+      low_score: 100
+      unit: µg/m3
+    humidity:
+      type: range
+      high_score_lower: 30
+      high_score_upper: 50
+      mid_score_lower: 25
+      mid_score_upper: 60
+      low_score_lower: 20
+      low_score_upper: 70
+      unit: "%"
+    no2:
+      type: smaller
+      high_score: 10
+      mid_score: 25
+      low_score: 40
+      unit: µg/m3
+    so2:
+      type: smaller
+      high_score: 13
+      mid_score: 40
+      low_score: 125
+      unit: µg/m3
+    co:
+      type: smaller
+      high_score: 1
+      mid_score: 4
+      low_score: 7
+      unit: µg/m3
+    temperature_cooling_nat:
+      type: range
+      high_score_lower: 15.8
+      high_score_upper: 20.8
+      mid_score_lower: 14.8
+      mid_score_upper: 21.8
+      low_score_lower: 13.8
+      low_score_upper: 22.8
+      unit: °C
+    temperature_cooling_mec:
+      type: range
+      high_score_lower: 23.5
+      high_score_upper: 25.5
+      mid_score_lower: 23
+      mid_score_upper: 26
+      low_score_lower: 22
+      low_score_upper: 27
+      unit: °C
+    temperature_heating:
+      type: range
+      high_score_lower: 21
+      high_score_upper: 23
+      mid_score_lower: 20
+      mid_score_upper: 24
+      low_score_lower: 19
+      low_score_upper: 25
+      unit: °C
+    light_percent_day:
+      type: greater
+      high_score: 60
+      mid_score: 40
+      low_score: 10
+      unit: "%"
+    light_percent_night:
+      type: smaller
+      high_score: 0
+      mid_score: 50
+      low_score: 90
+      unit:
+    sla_day:
+      type: smaller
+      high_score: 35
+      mid_score: 40
+      low_score: 45
+      unit: dB(A)
+    sla_night:
+      type: smaller
+      high_score: 30
+      mid_score: 35
+      low_score: 40
+      unit: dB(A)
+
+  weights:
+    scores:
+      co2: 1
+      pm25: 1
+      pm10: 1
+      o3: 1
+      ch2o: 1
+      humidity: 1
+      no2: 1
+      so2: 1
+      co: 1
+      temperature: 1
+      light: 1
+      sla: 1
+
+    indices:
+      iaq: 0.196335
+      thermal: 0.257853
+      lux: 0.256545
+      noise: 0.289267

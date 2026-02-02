@@ -7,7 +7,7 @@ def load_yaml(path: str) -> dict:
     """Load a YAML file and return it as a dictionary."""
 
     with open(path, "r") as f:
-        return yaml.safe_load(f)
+        return yaml.load(f, Loader=yaml.UnsafeLoader)
 
 
 def update_dict_nested(target: dict, update: dict) -> dict:

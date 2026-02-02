@@ -51,6 +51,7 @@ config = add_env_variables_to_config(config)
 
 # Database configuration
 db = config["db"]
+db_atlas_index = config["db_atlas_index"]
 
 # APIs configuration
 airly = config["airly"]
@@ -60,3 +61,6 @@ uhoo = config["uhoo"]
 
 # Field names synonyms
 field_synonyms = config["field_synonyms"]
+
+# ATLAS index configuration
+atlas_index = config["atlas_index"]
