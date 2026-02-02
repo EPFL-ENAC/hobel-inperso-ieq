@@ -18,13 +18,10 @@ uhoo:
 db:
   org: enac
   bucket: bucket
+  bucket_atlas_index: atlas_index
   maximum_query_retries: 10
   minimum_write_batch_size: 10000
   query_retry_delay_seconds: 5
-
-db_atlas_index:
-  org: enac
-  bucket: atlas_index
 
 field_synonyms:
   o3:

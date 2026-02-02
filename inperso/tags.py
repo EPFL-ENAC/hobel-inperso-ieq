@@ -9,6 +9,7 @@ device_name_column = 1
 
 
 tags = {}
+unit_numbers = {}
 
 
 header = []
@@ -43,3 +44,10 @@ for key_index in range(len(header)):
 
     values_and_devices = dict(sorted(values_and_devices.items()))
     tags[key] = values_and_devices
+
+
+for unit_number, device_names in tags.get("Unit number", {}).items():
+    for device_name in device_names:
+        unit_numbers[device_name] = unit_number
+
+unit_numbers = dict(sorted(unit_numbers.items()))

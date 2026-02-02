@@ -60,7 +60,7 @@ def fetch(
     query_str += _get_fields_filter(fields)
     query_str += _get_tags_filter(**kwargs)
     query_str += _get_moving_average_filter(frequency, window_size)
-    query_str += '|> keep(columns: ["_time", "_value", "_field", "device"])'
+    query_str += '|> keep(columns: ["_time", "_measurement", "device", "_field", "_value"])'
 
     logging.info("Running the query:\n" + query_str.replace("|>", "\n|>"))
     result = query(query_str)
@@ -70,9 +70,10 @@ def fetch(
     values = [
         {
             "time": record["_time"],
-            "value": record["_value"],
-            "field": record["_field"],
+            "brand": record["_measurement"],
             "device": record["device"],
+            "field": record["_field"],
+            "value": record["_value"],
         }
         for record in values
     ]

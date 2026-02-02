@@ -1,5 +1,7 @@
 """Load the configuration and read the environment variables."""
 
+import hashlib
+import json
 import os
 
 from dotenv import load_dotenv
@@ -45,13 +47,22 @@ def read_env_variables(entry: dict) -> dict:
     return new_entry
 
 
+def hash_dict(dictionary: dict) -> str:
+    """Create a hash string from a dictionary."""
+
+    string = json.dumps(dictionary, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    hash_object = hashlib.sha256(string.encode())
+    hash = hash_object.hexdigest()
+    return hash[:7]
+
+
 config = load_config()
 config = add_env_variables_to_config(config)
 
 
 # Database configuration
+datetime_start = config["datetime_start"]
 db = config["db"]
-db_atlas_index = config["db_atlas_index"]
 
 # APIs configuration
 airly = config["airly"]
@@ -64,3 +75,4 @@ field_synonyms = config["field_synonyms"]
 
 # ATLAS index configuration
 atlas_index = config["atlas_index"]
+atlas_index_hash = hash_dict(atlas_index)  # Used to detect configuration changes

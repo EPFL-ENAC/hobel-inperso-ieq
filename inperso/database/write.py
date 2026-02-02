@@ -29,16 +29,17 @@ class WriteQuery(TypedDict):
     time: datetime | int  # Unix timestamp
 
 
-def write(queries: list[WriteQuery]):
+def write(queries: list[WriteQuery], use_atlas_index_bucket: bool = False) -> None:
     """Write queries (dictionaries) into the database.
 
     Timestamps must be in UTC with second precision.
     """
+    bucket = config.db["atlas_index_bucket"] if use_atlas_index_bucket else config.db["bucket"]
 
     for attempt in range(config.db["maximum_query_retries"]):
         try:
             write_api = get_write_api()
-            write_api.write(bucket=config.db["bucket"], record=queries, write_precision=WritePrecision.S)
+            write_api.write(bucket=bucket, record=queries, write_precision=WritePrecision.S)
             break
 
         except Exception as e:

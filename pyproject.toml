@@ -50,7 +50,7 @@ addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 5"
 
 [tool.poetry.scripts]
 inperso-retrieve = "inperso.data_acquisition.retrieve:main"
-inperso-compute-atlas-index = "inperso.atlas_index.compute_index:main"
+inperso-compute-atlas-index = "inperso.atlas_index.index:main"
 
 [tool.ruff]
 line-length = 120
