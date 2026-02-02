@@ -1,50 +1,43 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.2.0
-    hooks:
-      - id: ruff
-        args:
-          - "--fix"
-
-  - repo: https://github.com/psf/black
-    rev: 24.1.1
-    hooks:
-    - id: black
-      language_version: python3
-
-  - repo: https://github.com/keewis/blackdoc
-    rev: v0.3.9
-    hooks:
-    - id: blackdoc
-      additional_dependencies:
-        - "black[jupyter]"
+      - id: check-json
+      - id: check-yaml
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.17.1
     hooks:
-    - id: mypy
-      exclude: tests
-      additional_dependencies:
-        - types-pyyaml
-        - types-requests
+      - id: mypy
+        additional_dependencies:
+          - types-cachetools
+          - types-pyyaml
+          - types-requests
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.7
     hooks:
-      - id: isort
+      - id: ruff-check  # Linter
+        args: [ --fix, --select, "I" ]
+      - id: ruff-format  # Formatter
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.4.1
     hooks:
-    - id: codespell
-      types_or:
-        - python
-        - markdown
-      additional_dependencies:
-        - tomli
+      - id: codespell
+        additional_dependencies:
+          - tomli
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
