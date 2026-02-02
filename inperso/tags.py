@@ -9,7 +9,7 @@ device_name_column = 1
 
 
 tags = {}
-unit_numbers = {}
+unit_numbers: dict[str, str] = {}
 
 
 header = []

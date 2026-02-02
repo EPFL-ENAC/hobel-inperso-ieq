@@ -63,6 +63,12 @@ atlas_index:
       so2: !!python/object/apply:eval [ 100 * 64.07 / 24.45 ]
       o3: !!python/object/apply:eval [ 48 / 24.45 ]
 
+  light_percent:
+    day_start_hour: 7
+    day_threshold: 150
+    night_start_hour: 22
+    night_threshold: 100
+
   thresholds:
     co2:
       type: smaller
