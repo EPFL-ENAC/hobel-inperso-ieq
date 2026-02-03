@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
+import numpy as np
 import pandas as pd
 
 from inperso import config
@@ -80,6 +81,22 @@ def compute_index(datetime_start, datetime_end):
     logging.info(f"Computing ATLAS index from {datetime_start} to {datetime_end}")
     measurements = preprocess_measurements(datetime_start, datetime_end)
     scores = compute_scores(measurements)
+    scores["score"] = np.log(scores["score"])
+
+    fields_per_category = config.atlas_index["index_fields"]
+    category_per_field = {field: category for category, fields in fields_per_category.items() for field in fields}
+    scores["category"] = scores["field"].map(category_per_field)
+    indices = scores.groupby(["time", "unit_number", "category"], as_index=False)["score"].mean()
+    indices = indices.pivot(index=["time", "unit_number"], columns="category", values="score").reset_index()
+
+    weights = config.atlas_index["weights"]
+    indices["atlas_index"] = indices.apply(
+        lambda row: sum(row[category] * weights[category] for category in weights.keys()), axis=1
+    )
+    for category in list(weights.keys()) + ["atlas_index"]:
+        indices[category] = np.exp(indices[category])
+
+    return indices
 
 
 if __name__ == "__main__":

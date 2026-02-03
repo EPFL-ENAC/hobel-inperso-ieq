@@ -89,6 +89,29 @@ atlas_index:
       "2": false
       "3": false
 
+  fields:
+    airthings:
+      - co2
+      - humidity
+      - pm25
+      - pm10
+      - sla_day
+      - sla_night
+      - temperature
+    uhoo:
+      - ch2o
+      - co
+      - no2
+      - o3
+      - so2
+      - co2
+      - pm10
+      - pm25
+      - temperature
+      - humidity
+      - light_percent_day
+      - light_percent_night
+
   thresholds:
     co2:
       type: smaller
@@ -199,23 +222,30 @@ atlas_index:
       low_score: 40
       unit: dB(A)
 
-  weights:
-    scores:
-      co2: 1
-      pm25: 1
-      pm10: 1
-      o3: 1
-      ch2o: 1
-      humidity: 1
-      no2: 1
-      so2: 1
-      co: 1
-      temperature: 1
-      light: 1
-      sla: 1
+  index_fields:
+    iaq:
+      - co2
+      - pm25
+      - pm10
+      - o3
+      - ch2o
+      - humidity
+      - no2
+      - so2
+      - co
+    thermal:
+      - temperature_heating
+      - temperature_cooling_nat
+      - temperature_cooling_mec
+    lux:
+      - light_percent_day
+      - light_percent_night
+    noise:
+      - sla_day
+      - sla_night
 
-    indices:
-      iaq: 0.196335
-      thermal: 0.257853
-      lux: 0.256545
-      noise: 0.289267
+  weights:
+    iaq: 0.196335
+    thermal: 0.257853
+    lux: 0.256545
+    noise: 0.289267

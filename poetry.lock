@@ -867,4 +867,4 @@ dev = ["pre-commit", "pytest", "pytest-cov", "pytest-mock"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "c5b1071cd86dcfbd3ae668b65dcbd04d381bd7ed7285302f11127db0da7f3730"
+content-hash = "a184ccf2b0dbfbb48aab48efb2569741bf42cc5de662928f2fff88a1a6a2b25c"

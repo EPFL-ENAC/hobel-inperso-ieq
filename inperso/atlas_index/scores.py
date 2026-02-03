@@ -3,22 +3,6 @@ import pandas as pd
 from inperso import config
 from inperso.tags import dcs, unit_numbers
 
-AIRTHINGS_PARAM_LIST = ["co2", "humidity", "pm25", "pm10", "sla_day", "sla_night", "temperature"]
-UHOO_PARAM_LIST = [
-    "ch2o",
-    "co",
-    "no2",
-    "o3",
-    "so2",
-    "co2",
-    "pm10",
-    "pm25",
-    "temperature",
-    "humidity",
-    "light_percent_day",
-    "light_percent_night",
-]
-
 
 def compute_scores(df: pd.DataFrame) -> pd.DataFrame:
     """Compute the scores for each measurements and put the results in the database."""
@@ -27,6 +11,7 @@ def compute_scores(df: pd.DataFrame) -> pd.DataFrame:
 
     df = compute_temperatures(df)
     df = compute_scores_per_measurement(df)
+    df = df.groupby(["time", "field", "unit_number"])["score"].mean().reset_index()
 
     return df
 
@@ -40,8 +25,8 @@ def compute_temperatures(df: pd.DataFrame) -> pd.DataFrame:
     uhoo_hourly = df[df["brand"] == "uhoo"]
 
     outdoor_lagged = compute_outdoor_temperature(airly_hourly)
-    airthings_hourly = compute_temperature(airthings_hourly, outdoor_lagged)
-    uhoo_hourly = compute_temperature(uhoo_hourly, outdoor_lagged)
+    airthings_hourly = compute_temperature(airthings_hourly, outdoor_lagged, "airthings")
+    uhoo_hourly = compute_temperature(uhoo_hourly, outdoor_lagged, "uhoo")
 
     df = pd.concat([airthings_hourly, uhoo_hourly], ignore_index=True)
     df = df[df["field"] != "temperature"]
@@ -69,8 +54,8 @@ def compute_outdoor_temperature(airly_hourly: pd.DataFrame) -> pd.DataFrame:
     return outdoor_lagged
 
 
-def compute_temperature(df_hourly: pd.DataFrame, outdoor_lagged: pd.DataFrame) -> pd.DataFrame:
-    df_hourly = df_hourly[df_hourly["field"].isin(AIRTHINGS_PARAM_LIST)]
+def compute_temperature(df_hourly: pd.DataFrame, outdoor_lagged: pd.DataFrame, brand: str) -> pd.DataFrame:
+    df_hourly = df_hourly[df_hourly["field"].isin(config.atlas_index["fields"][brand])]
     df_hourly["month"] = df_hourly["time"].dt.month
     df_hourly["dc"] = df_hourly["device"].map(dcs)
 
