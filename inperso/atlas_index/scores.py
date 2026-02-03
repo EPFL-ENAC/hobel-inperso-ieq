@@ -1,6 +1,9 @@
+import logging
+
 import pandas as pd
 
 from inperso import config
+from inperso.database.write import write
 from inperso.tags import dcs, unit_numbers
 
 
@@ -13,10 +16,13 @@ def compute_scores(df: pd.DataFrame) -> pd.DataFrame:
     df = compute_scores_per_measurement(df)
     df = df.groupby(["time", "field", "unit_number"])["score"].mean().reset_index()
 
+    write_scores(df)
+
     return df
 
 
 def compute_temperatures(df: pd.DataFrame) -> pd.DataFrame:
+    df["time"] = pd.to_datetime(df["time"])
     df["date"] = df["time"].dt.date
     df["hour"] = df["time"].dt.hour
 
@@ -195,6 +201,34 @@ def build_fn_range(**kwargs):
             return 0  # far from optimal
 
     return scale_to_100_range
+
+
+def write_scores(df: pd.DataFrame):
+    """Write the computed scores to the database."""
+
+    queries = []
+
+    for _, row in df.iterrows():
+        time = row["time"]
+        unit_number = row["unit_number"]
+
+        fields = {}
+        fields[row["field"]] = row["score"]
+
+        queries.append(
+            {
+                "measurement": "score",
+                "tags": {
+                    "unit_number": str(unit_number),
+                    "atlas_index_hash": config.atlas_index_hash,
+                },
+                "fields": fields,
+                "time": time,
+            }
+        )
+
+    logging.info(f"Writing {len(queries)} entries to the database.")
+    write(queries, use_atlas_index_bucket=True)
 
 
 function_type_map = {"smaller": build_fn_smaller, "greater": build_fn_greater, "range": build_fn_range}

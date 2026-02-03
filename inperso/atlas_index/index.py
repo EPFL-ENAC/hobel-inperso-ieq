@@ -12,7 +12,7 @@ from inperso.atlas_index.scores import compute_scores
 from inperso.database.buckets import ensure_bucket_exists
 from inperso.database.delete import delete
 from inperso.database.read import query
-from inperso.database.write import WriteQuery, write
+from inperso.database.write import write
 
 
 def main():
@@ -111,7 +111,6 @@ def compute_index(datetime_start, datetime_end):
 def write_indices(df: pd.DataFrame) -> None:
     """Write the computed indices to the database."""
 
-    bucket_name = config.db["bucket_atlas_index"]
     queries = []
 
     for _, row in df.iterrows():
