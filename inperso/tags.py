@@ -10,6 +10,7 @@ device_name_column = 1
 
 tags = {}
 unit_numbers: dict[str, str] = {}
+dcs: dict[str, str] = {}
 
 
 header = []
@@ -51,3 +52,10 @@ for unit_number, device_names in tags.get("Unit number", {}).items():
         unit_numbers[device_name] = unit_number
 
 unit_numbers = dict(sorted(unit_numbers.items()))
+
+
+for dc, device_names in tags.get("DC", {}).items():
+    for device_name in device_names:
+        dcs[device_name] = dc
+
+dcs = dict(sorted(dcs.items()))

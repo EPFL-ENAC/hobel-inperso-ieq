@@ -1,7 +1,7 @@
 """Compute the hourly ATLAS index and populate the database."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -25,6 +25,8 @@ def main():
     if datetime_start is None:
         datetime_start = config.datetime_start
 
+    # Need 3 days to compute lagged outdoor temperature, and 1 more day for off-by-one issues
+    datetime_start = datetime_start - timedelta(days=4)
     datetime_end = datetime.now(timezone.utc)
 
     compute_index(datetime_start, datetime_end)

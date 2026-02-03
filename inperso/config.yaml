@@ -69,6 +69,26 @@ atlas_index:
     night_start_hour: 22
     night_threshold: 100
 
+  sla:
+    day_start_hour: 8
+    night_start_hour: 22
+
+  temperature:
+    alpha_lagged_outdoor: 0.8
+    cooling_nat_outdoor_factor: -0.33
+    month_heating_start:
+      "1": 12
+      "2": 11
+      "3": 12
+    month_heating_end:
+      "1": 2
+      "2": 3
+      "3": 2
+    cooling_is_nat:
+      "1": true
+      "2": false
+      "3": false
+
   thresholds:
     co2:
       type: smaller

@@ -24,6 +24,7 @@ def preprocess_measurements(datetime_start: datetime, datetime_end: datetime) ->
     df = pd.DataFrame(data)
     df = convert_units(df)
     df = compute_light_percent(datetime_start, datetime_end, df)
+    df = compute_sla(df)
 
     return df
 
@@ -52,6 +53,10 @@ def compute_light_percent(datetime_start: datetime, datetime_end: datetime, df: 
         brands=["uhoo"],
         fields=["light"],
     )
+
+    if len(data) == 0:
+        return df
+
     df_minute = pd.DataFrame(data)
     df_minute["time"] = df_minute["time"].dt.floor("h")
     df_minute["hour"] = df_minute["time"].dt.hour
@@ -72,5 +77,18 @@ def compute_light_percent(datetime_start: datetime, datetime_end: datetime, df: 
     df_light_percent = df_light_percent[DATAFRAME_COLUMNS]
 
     df = pd.concat([df, df_light_percent], ignore_index=True)
+
+    return df
+
+
+def compute_sla(df: pd.DataFrame) -> pd.DataFrame:
+    day_start_hour = config.atlas_index["sla"]["day_start_hour"]
+    night_start_hour = config.atlas_index["sla"]["night_start_hour"]
+    hour = df["time"].dt.hour
+    is_day = (hour >= day_start_hour) & (hour < night_start_hour)
+    is_sla = df["field"] == "sla"
+
+    df.loc[is_day & is_sla, "field"] = "sla_day"
+    df.loc[~is_day & is_sla, "field"] = "sla_night"
 
     return df
