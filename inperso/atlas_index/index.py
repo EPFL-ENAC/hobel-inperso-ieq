@@ -87,6 +87,10 @@ def compute_index(datetime_start, datetime_end):
 
     logging.info(f"Computing ATLAS index from {datetime_start} to {datetime_end}")
     measurements = preprocess_measurements(datetime_start, datetime_end)
+    if measurements.empty:
+        logging.info("No measurements found in the given time range.")
+        return pd.DataFrame()
+
     scores = compute_scores(measurements)
     scores["score"] = np.log(scores["score"])
 
