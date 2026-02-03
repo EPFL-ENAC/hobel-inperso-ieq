@@ -1,7 +1,7 @@
 import logging
 import time
 from datetime import datetime
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from influxdb_client import InfluxDBClient, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -29,12 +29,12 @@ class WriteQuery(TypedDict):
     time: datetime | int  # Unix timestamp
 
 
-def write(queries: list[WriteQuery], use_atlas_index_bucket: bool = False) -> None:
+def write(queries: list[WriteQuery] | list[dict[str, Any]], use_atlas_index_bucket: bool = False) -> None:
     """Write queries (dictionaries) into the database.
 
     Timestamps must be in UTC with second precision.
     """
-    bucket = config.db["atlas_index_bucket"] if use_atlas_index_bucket else config.db["bucket"]
+    bucket = config.db["bucket_atlas_index"] if use_atlas_index_bucket else config.db["bucket"]
 
     for attempt in range(config.db["maximum_query_retries"]):
         try:

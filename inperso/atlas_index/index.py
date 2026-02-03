@@ -26,11 +26,15 @@ def main():
     if datetime_start is None:
         datetime_start = config.datetime_start
 
-    # Need 3 days to compute lagged outdoor temperature, and 1 more day for off-by-one issues
-    datetime_start = datetime_start - timedelta(days=4)
     datetime_end = datetime.now(timezone.utc)
 
-    compute_index(datetime_start, datetime_end)
+    # Chunk computation by month
+    current_start = datetime_start
+    while current_start < datetime_end:
+        next_month = (current_start.replace(day=1) + timedelta(days=32)).replace(day=1)
+        current_end = min(next_month, datetime_end)
+        compute_index(current_start, current_end)
+        current_start = current_end
 
 
 def get_latest_index_computation_time() -> datetime | None:
@@ -59,7 +63,7 @@ def clean_outdated_index_data():
 
     delete(
         bucket=config.db["bucket_atlas_index"],
-        predicate=f'atlas_index_hash != "{config.atlas_index_hash}"',
+        predicate=f'atlas_index_hash!="{config.atlas_index_hash}"',
     )
 
 
@@ -77,6 +81,9 @@ def get_earliest_data_time() -> datetime | None:
 
 def compute_index(datetime_start, datetime_end):
     """Compute the ATLAS index and put the results in the database."""
+
+    # Need 3 days to compute lagged outdoor temperature, and 1 more day for off-by-one issues
+    datetime_start = datetime_start - timedelta(days=4)
 
     logging.info(f"Computing ATLAS index from {datetime_start} to {datetime_end}")
     measurements = preprocess_measurements(datetime_start, datetime_end)
@@ -96,7 +103,41 @@ def compute_index(datetime_start, datetime_end):
     for category in list(weights.keys()) + ["atlas_index"]:
         indices[category] = np.exp(indices[category])
 
+    write_indices(indices)
+
     return indices
+
+
+def write_indices(df: pd.DataFrame) -> None:
+    """Write the computed indices to the database."""
+
+    bucket_name = config.db["bucket_atlas_index"]
+    queries = []
+
+    for _, row in df.iterrows():
+        time = row["time"]
+        unit_number = row["unit_number"]
+
+        fields = {
+            category: row[category]
+            for category in df.columns
+            if category not in ["time", "unit_number"] and not pd.isna(row[category])
+        }
+
+        queries.append(
+            {
+                "measurement": "index",
+                "tags": {
+                    "unit_number": str(unit_number),
+                    "atlas_index_hash": config.atlas_index_hash,
+                },
+                "fields": fields,
+                "time": time,
+            }
+        )
+
+    logging.info(f"Writing {len(queries)} entries to the database.")
+    write(queries, use_atlas_index_bucket=True)
 
 
 if __name__ == "__main__":
