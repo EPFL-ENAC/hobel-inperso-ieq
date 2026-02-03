@@ -55,7 +55,7 @@ def fetch(
     """
     query_str = f'from(bucket:"{config.db["bucket"]}")'
     query_str += get_datetime_filter(datetime_start, datetime_end)
-    query_str += _get_brands_filter(brands)
+    query_str += _get_measurements_filter(brands)
     query_str += _get_devices_filter(devices)
     query_str += _get_fields_filter(fields)
     query_str += _get_tags_filter(**kwargs)
@@ -83,6 +83,121 @@ def fetch(
     return values
 
 
+def fetch_atlas_scores(
+    datetime_start: Optional[datetime] = None,
+    datetime_end: Optional[datetime] = None,
+    frequency: Optional[str] = None,
+    window_size: Optional[str] = None,
+    unit_numbers: Optional[list[str]] = None,
+    fields: Optional[list[str]] = None,
+) -> list[dict]:
+    """Fetch score data from the ATLAS index database.
+
+    Args:
+        datetime_start (datetime, optional): Start of the time range.
+            Defaults to None, which retrieve data from timestamp 0.
+        datetime_end (datetime, optional): End of the time range.
+            Defaults to None, which retrieve data until now.
+        frequency (str, optional): If provided with "window_size", resample the
+            data using a moving average. Example: "6h".
+        window_size (str, optional): If provided with "frequency", resample the
+            data using a moving average. Example: "1d".
+        unit_numbers (list[str], optional): List of unit numbers to retrieve data from.
+            Defaults to None, which retrieves data from all unit numbers.
+        fields (list[str], optional): List of fields to retrieve data from.
+            Defaults to None, which retrieves data from all fields.
+
+    Returns:
+        list[dict]: List of dictionaries containing the data, with the keys:
+            - "time" (datetime)
+            - "value" (any)
+            - "field" (str)
+            - "unit_number" (str)
+    """
+
+    query_str = f'from(bucket:"{config.db["bucket_atlas_index"]}")'
+    query_str += get_datetime_filter(datetime_start, datetime_end)
+    query_str += _get_measurements_filter(["score"])
+    query_str += _get_unit_numbers_filter(unit_numbers)
+    query_str += _get_fields_filter(fields)
+    query_str += _get_moving_average_filter(frequency, window_size)
+    query_str += '|> keep(columns: ["_time", "unit_number", "_field", "_value"])'
+
+    logging.info("Running the query:\n" + query_str.replace("|>", "\n|>"))
+    result = query(query_str)
+    values = [record.values for table in result for record in table.records]
+
+    # Remove "result" and "table" keys
+    values = [
+        {
+            "time": record["_time"],
+            "unit_number": record["unit_number"],
+            "field": record["_field"],
+            "value": record["_value"],
+        }
+        for record in values
+    ]
+
+    return values
+
+
+def fetch_atlas_index(
+    datetime_start: Optional[datetime] = None,
+    datetime_end: Optional[datetime] = None,
+    frequency: Optional[str] = None,
+    window_size: Optional[str] = None,
+    unit_numbers: Optional[list[str]] = None,
+    categories: Optional[list[str]] = None,
+) -> list[dict]:
+    """Fetch ATLAS index data from the ATLAS index database.
+
+    Args:
+        datetime_start (datetime, optional): Start of the time range.
+            Defaults to None, which retrieve data from timestamp 0.
+        datetime_end (datetime, optional): End of the time range.
+            Defaults to None, which retrieves data until now.
+        frequency (str, optional): If provided with "window_size", resample the
+            data using a moving average. Example: "6h".
+        window_size (str, optional): If provided with "frequency", resample the
+            data using a moving average. Example: "1d".
+        unit_numbers (list[str], optional): List of unit numbers to retrieve data from.
+            Defaults to None, which retrieves data from all unit numbers.
+        categories (list[str], optional): List of index categories ("atlas_index", "iaq", "lux", "noise", "thermal") to retrieve data from. Defaults to None, which retrieves data from all categories.
+
+    Returns:
+        list[dict]: List of dictionaries containing the data, with the keys:
+            - "time" (datetime)
+            - "value" (any)
+            - "category" (str)
+            - "unit_number" (str)
+    """
+
+    query_str = f'from(bucket:"{config.db["bucket_atlas_index"]}")'
+    query_str += get_datetime_filter(datetime_start, datetime_end)
+    query_str += _get_measurements_filter(["index"])
+    query_str += _get_unit_numbers_filter(unit_numbers)
+    query_str += _get_fields_filter(categories)
+    query_str += _get_moving_average_filter(frequency, window_size)
+    query_str += '|> keep(columns: ["_time", "unit_number", "_field", "_value"])'
+
+    logging.info("Running the query:\n" + query_str.replace("|>", "\n|>"))
+    result = query(query_str)
+    values = [record.values for table in result for record in table.records]
+
+    # Remove "result" and "table" keys
+    values = [
+        {
+            "time": record["_time"],
+            "unit_number": record["unit_number"],
+            "category": record["_field"],
+            "value": record["_value"],
+        }
+        for record in values
+    ]
+
+    return values
+
+
 def _get_moving_average_filter(
     frequency: Optional[str] = None,
     window_size: Optional[str] = None,
@@ -100,7 +215,7 @@ def _get_moving_average_filter(
     return filter
 
 
-def _get_brands_filter(brands: Optional[list[str]] = None) -> str:
+def _get_measurements_filter(brands: Optional[list[str]] = None) -> str:
     if brands is None:
         return ""
 
@@ -112,6 +227,13 @@ def _get_devices_filter(devices: Optional[list[str]] = None) -> str:
         return ""
 
     return f'|> filter(fn: (r) => r["device"] =~ /^({"|".join(devices)})$/)'
+
+
+def _get_unit_numbers_filter(unit_numbers: Optional[list[str]] = None) -> str:
+    if unit_numbers is None:
+        return ""
+
+    return f'|> filter(fn: (r) => r["unit_number"] =~ /^({"|".join(unit_numbers)})$/)'
 
 
 def _get_fields_filter(fields: Optional[list[str]] = None) -> str:

@@ -1,7 +1,7 @@
 import logging
 
 from . import config, data_acquisition, database, utils
-from .fetch import fetch
+from .fetch import fetch, fetch_atlas_index, fetch_atlas_scores
 from .fetch_surveys import fetch_surveys, get_survey_names
 
 __all__ = [
@@ -9,6 +9,8 @@ __all__ = [
     "data_acquisition",
     "database",
     "fetch",
+    "fetch_atlas_scores",
+    "fetch_atlas_index",
     "fetch_surveys",
     "get_survey_names",
     "utils",

@@ -94,20 +94,35 @@ df = pd.DataFrame(data)  # Optional
 Use the `inperso.get_survey_names()` function to get the list of available surveys. It is also possible to filter the surveys by date using the `datetime_start` and `datetime_end` arguments.
 
 
-# ⛏️ Populating the database with data from the APIs
+## ATLAS scores and index
 
-At the root of your project, create a `.env` file with the following variables:
+Similarly, to fetch ATLAS scores and index, use the `fetch_atlas_scores` and `fetch_atlas_index` functions:
 
-```bash
-AIRLY_API_KEY=...
-AIRTHINGS_API_ID=...
-AIRTHINGS_API_KEY=...
-UHOO_CLIENT_ID=...
-QUALTRICS_API_KEY=...
-INFLUX_BUCKET=bucket
-INFLUX_HOST=...
-INFLUX_ORG=enac
-INFLUX_TOKEN=...
+```python
+from datetime import datetime
+import pandas as pd  # Optional, if you want to convert the data into a DataFrame
+import inperso
+
+data_scores = inperso.fetch_atlas_scores(
+    datetime_start = datetime(2024, 1, 1),
+    datetime_end = datetime.now(),
+    # frequency = "1h",
+    # window_size = "1d",
+    # unit_numbers = ["1-25", "1-26"],
+    # fields = ["ch2o", "co"],
+)
+
+data_index = inperso.fetch_atlas_index(
+    datetime_start = datetime(2024, 1, 1),
+    datetime_end = datetime.now(),
+    # frequency = "1h",
+    # window_size = "1d",
+    # unit_numbers = ["1-25", "1-26"],
+    # categories = ["atlas_index", "iaq", "lux", "noise", "thermal"],
+)
+
+df_scores = pd.DataFrame(data_scores)  # Optional
+df_index = pd.DataFrame(data_index)    # Optional
 ```
 
 
