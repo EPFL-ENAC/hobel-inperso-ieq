@@ -7,6 +7,7 @@ from typing import Optional
 from inperso import config
 from inperso.database.read import get_datetime_filter, query
 from inperso.tags import tags
+from inperso.tags import unit_numbers as device_to_unit_number
 
 
 def fetch(
@@ -90,6 +91,7 @@ def fetch_atlas_scores(
     window_size: Optional[str] = None,
     unit_numbers: Optional[list[str]] = None,
     fields: Optional[list[str]] = None,
+    dc: Optional[list[str]] = None,
 ) -> list[dict]:
     """Fetch score data from the ATLAS index database.
 
@@ -106,6 +108,7 @@ def fetch_atlas_scores(
             Defaults to None, which retrieves data from all unit numbers.
         fields (list[str], optional): List of fields to retrieve data from.
             Defaults to None, which retrieves data from all fields.
+        dc (list[str], optional): List of DCs to retrieve data from.
 
     Returns:
         list[dict]: List of dictionaries containing the data, with the keys:
@@ -120,6 +123,7 @@ def fetch_atlas_scores(
     query_str += _get_measurements_filter(["score"])
     query_str += _get_unit_numbers_filter(unit_numbers)
     query_str += _get_fields_filter(fields)
+    query_str += _get_dcs_filter(dc)
     query_str += _get_moving_average_filter(frequency, window_size)
     query_str += '|> keep(columns: ["_time", "unit_number", "_field", "_value"])'
 
@@ -148,6 +152,7 @@ def fetch_atlas_index(
     window_size: Optional[str] = None,
     unit_numbers: Optional[list[str]] = None,
     categories: Optional[list[str]] = None,
+    dc: Optional[list[str]] = None,
 ) -> list[dict]:
     """Fetch ATLAS index data from the ATLAS index database.
 
@@ -163,6 +168,7 @@ def fetch_atlas_index(
         unit_numbers (list[str], optional): List of unit numbers to retrieve data from.
             Defaults to None, which retrieves data from all unit numbers.
         categories (list[str], optional): List of index categories ("atlas_index", "iaq", "lux", "noise", "thermal") to retrieve data from. Defaults to None, which retrieves data from all categories.
+        dc (list[str], optional): List of DCs to retrieve data from.
 
     Returns:
         list[dict]: List of dictionaries containing the data, with the keys:
@@ -177,6 +183,7 @@ def fetch_atlas_index(
     query_str += _get_measurements_filter(["index"])
     query_str += _get_unit_numbers_filter(unit_numbers)
     query_str += _get_fields_filter(categories)
+    query_str += _get_dcs_filter(dc)
     query_str += _get_moving_average_filter(frequency, window_size)
     query_str += '|> keep(columns: ["_time", "unit_number", "_field", "_value"])'
 
@@ -253,6 +260,26 @@ def _get_fields_with_synonyms(fields: list[str]) -> list[str]:
                 fields_with_synonyms.update(synonmys)
 
     return list(fields_with_synonyms)
+
+
+def _get_dcs_filter(dcs: Optional[list[str]] = None) -> str:
+    if dcs is None:
+        return ""
+
+    unit_numbers = set()
+
+    for dc in dcs:
+        if dc not in tags["DC"]:
+            raise ValueError(f"Invalid DC: '{dc}'. Must be one of: {list(tags['DC'].keys())}")
+
+        unit_numbers.update([device_to_unit_number.get(device, "") for device in tags["DC"][dc]])
+
+    unit_numbers.discard("")
+
+    if len(unit_numbers) == 0:
+        return ""
+
+    return f'|> filter(fn: (r) => r["unit_number"] =~ /^({"|".join(unit_numbers)})$/)'
 
 
 def _get_tags_filter(**kwargs) -> str:
