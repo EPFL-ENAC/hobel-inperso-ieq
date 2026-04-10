@@ -110,6 +110,7 @@ data_scores = inperso.fetch_atlas_scores(
     # window_size = "1d",
     # unit_numbers = ["1-25", "1-26"],
     # fields = ["ch2o", "co"],
+    # dc = ["1", "2" , "3"],
 )
 
 data_index = inperso.fetch_atlas_index(
@@ -119,6 +120,7 @@ data_index = inperso.fetch_atlas_index(
     # window_size = "1d",
     # unit_numbers = ["1-25", "1-26"],
     # categories = ["atlas_index", "iaq", "lux", "noise", "thermal"],
+    # dc = ["1", "2" , "3"],
 )
 
 df_scores = pd.DataFrame(data_scores)  # Optional
