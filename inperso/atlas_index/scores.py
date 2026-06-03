@@ -7,16 +7,17 @@ from inperso.database.write import write
 from inperso.tags import dcs, unit_numbers
 
 
-def compute_scores(df: pd.DataFrame) -> pd.DataFrame:
+def compute_scores(df: pd.DataFrame, write_to_db: bool = False) -> pd.DataFrame:
     """Compute the scores for each measurements and put the results in the database."""
 
-    df["unit_number"] = df["device"].map(unit_numbers)
+    df["unit_number"] = df["device"].map(unit_numbers).fillna("unknown")
 
     df = compute_temperatures(df)
     df = compute_scores_per_measurement(df)
     df = df.groupby(["time", "field", "unit_number"])["score"].mean().reset_index()
 
-    write_scores(df)
+    if write_to_db:
+        write_scores(df)
 
     return df
 
