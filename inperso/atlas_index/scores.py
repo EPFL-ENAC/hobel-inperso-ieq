@@ -68,7 +68,7 @@ def compute_outdoor_temperature(airly_hourly: pd.DataFrame) -> pd.DataFrame:
 def compute_temperature(df_hourly: pd.DataFrame, outdoor_lagged: pd.DataFrame, brand: str) -> pd.DataFrame:
     df_hourly = df_hourly[df_hourly["field"].isin(config.atlas_index["fields"][brand])]
     df_hourly["month"] = df_hourly["time"].dt.month
-    df_hourly["dc"] = df_hourly["device"].map(dcs)
+    df_hourly["dc"] = df_hourly["device"].map(dcs).fillna("unknown")
 
     df_hourly = compute_temperature_heating(df_hourly)
     df_hourly = compute_temperature_cooling_mec(df_hourly)
@@ -107,7 +107,13 @@ def compute_temperature_cooling_mec(df_hourly: pd.DataFrame) -> pd.DataFrame:
 
 def compute_temperature_cooling_nat(df_hourly: pd.DataFrame, outdoor_lagged: pd.DataFrame) -> pd.DataFrame:
     df_hourly["date"] = pd.to_datetime(df_hourly["date"]).dt.date
-    df_hourly = df_hourly.merge(outdoor_lagged[["date", "t_rm"]], on="date", how="left")
+
+    if outdoor_lagged.empty:
+        logging.warning("Outdoor temperature data is missing. Skipping cooling natural temperature adjustment.")
+        df_hourly["t_rm"] = 0.0
+    else:
+        df_hourly = df_hourly.merge(outdoor_lagged[["date", "t_rm"]], on="date", how="left")
+
     df_hourly = df_hourly.drop(
         df_hourly[(df_hourly["field"] == "temperature_cooling_nat") & (df_hourly["t_rm"].isna())].index
     )

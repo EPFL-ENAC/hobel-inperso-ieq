@@ -80,14 +80,17 @@ atlas_index:
       "1": 12
       "2": 11
       "3": 12
+      "unknown": 11
     month_heating_end:
       "1": 2
       "2": 3
       "3": 2
+      "unknown": 3
     cooling_is_nat:
       "1": true
       "2": false
       "3": false
+      "unknown": true
 
   fields:
     airthings:
