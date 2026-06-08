@@ -79,7 +79,12 @@ def get_earliest_data_time() -> datetime | None:
     return min(r.records[0].get_time() for r in result)
 
 
-def compute_index(datetime_start: datetime, datetime_end: datetime, write_to_db: bool = False) -> pd.DataFrame:
+def compute_index(
+    datetime_start: datetime,
+    datetime_end: datetime,
+    write_to_db: bool = False,
+    keep_values: bool = False,
+) -> pd.DataFrame:
     """Compute the ATLAS index and put the results in the database."""
 
     # Need 3 days to compute lagged outdoor temperature, and 1 more day for off-by-one issues
@@ -91,7 +96,7 @@ def compute_index(datetime_start: datetime, datetime_end: datetime, write_to_db:
         logging.info("No measurements found in the given time range.")
         return pd.DataFrame()
 
-    scores = compute_scores(measurements, write_to_db=write_to_db)
+    scores = compute_scores(measurements, write_to_db=write_to_db, keep_values=keep_values)
     scores["score"] = np.log(scores["score"])
 
     fields_per_category = config.atlas_index["index_fields"]
