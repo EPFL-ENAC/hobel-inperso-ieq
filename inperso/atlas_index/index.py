@@ -8,7 +8,7 @@ import pandas as pd
 
 from inperso import config
 from inperso.atlas_index.preprocessing import preprocess_measurements
-from inperso.atlas_index.scores import compute_scores
+from inperso.atlas_index.scores import compute_scores_inperso
 from inperso.database.buckets import ensure_bucket_exists
 from inperso.database.delete import delete
 from inperso.database.read import query
@@ -96,7 +96,7 @@ def compute_index(
         logging.info("No measurements found in the given time range.")
         return pd.DataFrame()
 
-    scores = compute_scores(measurements, write_to_db=write_to_db, keep_values=keep_values)
+    scores = compute_scores_inperso(measurements, write_to_db=write_to_db, keep_values=keep_values)
     scores["score"] = np.log(scores["score"])
 
     fields_per_category = config.atlas_index["index_fields"]

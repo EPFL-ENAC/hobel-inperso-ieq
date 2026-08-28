@@ -160,9 +160,9 @@ def test_apply_temperature_context_uses_lagged_outdoor():
     assert out["value"].iloc[0] == pytest.approx(26.0 + factor * t_rm)
 
 
-def test_compute_scores_with_context():
-    """compute_scores_with_context scores the context path and returns a fallback note."""
-    from inperso.atlas_index.scores import compute_scores_with_context
+def test_compute_scores():
+    """compute_scores scores the context path and returns a fallback note."""
+    from inperso.atlas_index.scores import compute_scores
 
     df = pd.DataFrame(
         [
@@ -177,7 +177,7 @@ def test_compute_scores_with_context():
         "cooling_type": "mechanical",
         "heating_season": "non-heating",
     }
-    out, fallback_note = compute_scores_with_context(df.copy(), context, keep_values=True)
+    out, fallback_note = compute_scores(df.copy(), context, keep_values=True)
 
     assert "score" in out.columns
     assert set(out["field"]) == {"temperature_cooling_mec"}

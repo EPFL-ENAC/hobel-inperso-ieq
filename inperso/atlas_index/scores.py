@@ -20,37 +20,35 @@ FALLBACK_NO_OUTDOOR = (
 )
 
 
-def compute_scores_with_context(
+def compute_scores(
     df: pd.DataFrame,
     context: ScoreContext,
     keep_values: bool = False,
 ) -> tuple[pd.DataFrame, str | None]:
     """Compute scores where the temperature variant is chosen by an explicit context.
 
-    Replaces the default temperature handling (``compute_temperatures``) with
-    ``apply_temperature_context``. Returns the scored DataFrame and a fallback note
+    Returns the scored DataFrame and a fallback note
     that explains any fallback the context path had to apply.
     """
     df["time"] = pd.to_datetime(df["time"])
     df["unit_number"] = df["device"].map(unit_numbers).fillna("unknown")
 
     df, fallback_note = apply_temperature_context(df, context)
-    df = compute_scores_per_measurement(df)
-
-    columns = ["time", "field", "unit_number"]
-    if keep_values:
-        columns.append("value")
-    df = df.groupby(columns)["score"].mean().reset_index()
-
+    df = _compute_scores(df, write_to_db=False, keep_values=keep_values)
     return df, fallback_note
 
 
-def compute_scores(df: pd.DataFrame, write_to_db: bool = False, keep_values: bool = False) -> pd.DataFrame:
-    """Compute the scores for each measurements and put the results in the database."""
+def compute_scores_inperso(df: pd.DataFrame, write_to_db: bool = False, keep_values: bool = False) -> pd.DataFrame:
+    """Compute the scores for each measurements of the inperso influx database and put the results in the database."""
 
     df["unit_number"] = df["device"].map(unit_numbers).fillna("unknown")
 
     df = compute_temperatures(df)
+    df = _compute_scores(df, write_to_db=write_to_db, keep_values=keep_values)
+    return df
+
+
+def _compute_scores(df: pd.DataFrame, write_to_db: bool = False, keep_values: bool = False) -> pd.DataFrame:
     df = compute_scores_per_measurement(df)
 
     columns = ["time", "field", "unit_number"]
