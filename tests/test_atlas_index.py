@@ -79,14 +79,10 @@ def test_apply_temperature_context_variants():
     outdoor["time"] = pd.to_datetime(outdoor["time"])
     df = pd.concat([rows, outdoor], ignore_index=True)
 
-    out, _ = apply_temperature_context(
-        df.copy(), {"cooling_type": "mechanical", "heating_season": "heating"}
-    )
+    out, _ = apply_temperature_context(df.copy(), {"cooling_type": "mechanical", "heating_season": "heating"})
     assert set(out["field"]) == {"temperature_heating"}
 
-    out, _ = apply_temperature_context(
-        df.copy(), {"cooling_type": "mechanical", "heating_season": "non-heating"}
-    )
+    out, _ = apply_temperature_context(df.copy(), {"cooling_type": "mechanical", "heating_season": "non-heating"})
     assert set(out["field"]) == {"temperature_cooling_mec"}
 
     out, _ = apply_temperature_context(
@@ -149,9 +145,7 @@ def test_apply_temperature_context_uses_lagged_outdoor():
     rows["time"] = pd.to_datetime(rows["time"])
     df = pd.concat([rows, outdoor], ignore_index=True)
 
-    out, _ = apply_temperature_context(
-        df.copy(), {"cooling_type": "natural", "heating_season": "non-heating"}
-    )
+    out, _ = apply_temperature_context(df.copy(), {"cooling_type": "natural", "heating_season": "non-heating"})
 
     # t_rm at 01-15 uses outdoor from 01-14, 01-13, 01-12 (not 01-15).
     t_rm = (1 - alpha) * (30.0 + alpha * 20.0 + alpha**2 * 10.0)

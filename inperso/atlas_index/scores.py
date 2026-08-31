@@ -3,10 +3,9 @@ import logging
 import pandas as pd
 
 from inperso import config
-from inperso.atlas_index.models import ScoreContext
+from inperso.atlas_index.models import ScoreContext, default_score_context
 from inperso.database.write import write
 from inperso.tags import dcs, unit_numbers
-
 
 FALLBACK_OUT_OF_RANGE = (
     "Outdoor running-mean temperature was outside the EN 16798-1 applicability range "
@@ -34,7 +33,7 @@ def compute_scores(
     df["unit_number"] = df["device"].map(unit_numbers).fillna("unknown")
 
     df, fallback_note = apply_temperature_context(df, context)
-    df = _compute_scores(df, write_to_db=False, keep_values=keep_values)
+    df = _compute_scores(df, context, write_to_db=False, keep_values=keep_values)
     return df, fallback_note
 
 
@@ -44,12 +43,14 @@ def compute_scores_inperso(df: pd.DataFrame, write_to_db: bool = False, keep_val
     df["unit_number"] = df["device"].map(unit_numbers).fillna("unknown")
 
     df = compute_temperatures(df)
-    df = _compute_scores(df, write_to_db=write_to_db, keep_values=keep_values)
+    df = _compute_scores(df, default_score_context, write_to_db=write_to_db, keep_values=keep_values)
     return df
 
 
-def _compute_scores(df: pd.DataFrame, write_to_db: bool = False, keep_values: bool = False) -> pd.DataFrame:
-    df = compute_scores_per_measurement(df)
+def _compute_scores(
+    df: pd.DataFrame, context: ScoreContext, write_to_db: bool = False, keep_values: bool = False
+) -> pd.DataFrame:
+    df = compute_scores_per_measurement(df, context)
 
     columns = ["time", "field", "unit_number"]
     if keep_values:
@@ -166,8 +167,21 @@ def compute_temperature_cooling_nat(df_hourly: pd.DataFrame, outdoor_lagged: pd.
     return _apply_natural_cooling_correction(df_hourly, nat_rows)
 
 
-def compute_scores_per_measurement(df: pd.DataFrame) -> pd.DataFrame:
-    thresholds = config.atlas_index["thresholds"]
+def _get_thresholds(context: ScoreContext) -> dict[str, dict[str, float]]:
+    """Get the thresholds for the given context.
+
+    Fills in missing categories with values from default context.
+    """
+    thresholds = config.atlas_index[default_score_context.building_type]["thresholds"]
+
+    for field, params in config.atlas_index[context.building_type]["thresholds"].items():
+        thresholds[field].update(params)
+
+    return thresholds
+
+
+def compute_scores_per_measurement(df: pd.DataFrame, context: ScoreContext) -> pd.DataFrame:
+    thresholds = _get_thresholds(context)
     score_functions = {}
 
     for field, params in thresholds.items():
@@ -340,6 +354,8 @@ def _season_mask(
         return pd.Series(True, index=df.index)
     if coverage == "non-heating":
         return pd.Series(False, index=df.index)
+    if start is None or end is None:
+        raise ValueError("Heating season start and end are required when coverage is 'mixed'.")
     return df.apply(
         lambda row: _date_in_season(row["month"], row["day"], start, end),
         axis=1,
@@ -388,12 +404,9 @@ def apply_temperature_context(
 
     Raises ``ValueError`` when the context is incomplete or inconsistent.
     """
-    if context.get("heating_season") is None or context.get("cooling_type") is None:
-        raise ValueError("Heating-season coverage and cooling type are required.")
-
-    coverage = context["heating_season"]
-    start = _parse_mm_dd(context.get("heating_season_start"))
-    end = _parse_mm_dd(context.get("heating_season_end"))
+    coverage = context.heating_season
+    start = _parse_mm_dd(context.heating_season_start)
+    end = _parse_mm_dd(context.heating_season_end)
     if coverage == "mixed" and (start is None or end is None):
         raise ValueError("Heating season start and end are required when coverage is 'mixed'.")
 
@@ -413,7 +426,7 @@ def apply_temperature_context(
         heat = temp_df.index[is_heating.values]
         temp_df.loc[heat, "field"] = "temperature_heating"
         non_heat = temp_df.index[~is_heating.values]
-        temp_df, fallback_note = _assign_cooling(temp_df, non_heat, outdoor_lagged, context["cooling_type"])
+        temp_df, fallback_note = _assign_cooling(temp_df, non_heat, outdoor_lagged, context.cooling_type)
 
     df = pd.concat([other_df, temp_df], ignore_index=True)
     df = df[df["field"] != "outdoor_temperature"]
