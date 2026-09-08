@@ -172,9 +172,9 @@ def _get_thresholds(context: ScoreContext) -> dict[str, dict[str, float]]:
 
     Fills in missing categories with values from default context.
     """
-    thresholds = config.atlas_index[default_score_context.building_type]["thresholds"]
+    thresholds = config.atlas_index["thresholds"][default_score_context.building_type]
 
-    for field, params in config.atlas_index[context.building_type]["thresholds"].items():
+    for field, params in config.atlas_index["thresholds"][context.building_type].items():
         thresholds[field].update(params)
 
     return thresholds
