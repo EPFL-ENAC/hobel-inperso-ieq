@@ -110,9 +110,7 @@ def compute_index(
     indices = indices.pivot(index=["time", "unit_number"], columns="category", values="score").reset_index()
 
     weights = config.atlas_index["weights"]
-    indices["atlas_index"] = indices.apply(
-        lambda row: weighted_atlas_index(row, weights, indices.columns), axis=1
-    )
+    indices["atlas_index"] = indices.apply(lambda row: weighted_atlas_index(row, weights, indices.columns), axis=1)
     available_categories = {category for category in weights if category in indices.columns}
     for category in list(available_categories) + ["atlas_index"]:
         indices[category] = np.exp(indices[category])

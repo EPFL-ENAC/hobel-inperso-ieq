@@ -90,14 +90,10 @@ def test_apply_temperature_context_variants():
     outdoor["time"] = pd.to_datetime(outdoor["time"])
     df = pd.concat([rows, outdoor], ignore_index=True)
 
-    out, _ = apply_temperature_context(
-        df.copy(), ScoreContext("residential", "mechanical", "heating")
-    )
+    out, _ = apply_temperature_context(df.copy(), ScoreContext("residential", "mechanical", "heating"))
     assert set(out["field"]) == {"temperature_heating"}
 
-    out, _ = apply_temperature_context(
-        df.copy(), ScoreContext("residential", "mechanical", "non-heating")
-    )
+    out, _ = apply_temperature_context(df.copy(), ScoreContext("residential", "mechanical", "non-heating"))
     assert set(out["field"]) == {"temperature_cooling_mec"}
 
     out, _ = apply_temperature_context(
@@ -123,9 +119,7 @@ def test_apply_temperature_context_requires_context():
 
     # Mixed season requires both heating-season bounds.
     with pytest.raises(ValueError):
-        apply_temperature_context(
-            df.copy(), ScoreContext("residential", "natural", "mixed")
-        )
+        apply_temperature_context(df.copy(), ScoreContext("residential", "natural", "mixed"))
 
     with pytest.raises(ValueError):
         apply_temperature_context(
@@ -161,9 +155,7 @@ def test_apply_temperature_context_uses_lagged_outdoor():
 
     from inperso.atlas_index.models import ScoreContext
 
-    out, _ = apply_temperature_context(
-        df.copy(), ScoreContext("residential", "natural", "non-heating")
-    )
+    out, _ = apply_temperature_context(df.copy(), ScoreContext("residential", "natural", "non-heating"))
 
     # t_rm at 01-15 uses outdoor from 01-14, 01-13, 01-12 (not 01-15).
     t_rm = (1 - alpha) * (30.0 + alpha * 20.0 + alpha**2 * 10.0)
@@ -215,9 +207,7 @@ def test_compute_scores_drops_fields_without_thresholds(caplog):
     df["time"] = pd.to_datetime(df["time"])
 
     with caplog.at_level(logging.WARNING):
-        out, _ = compute_scores(
-            df.copy(), ScoreContext("residential", "mechanical", "non-heating"), keep_values=True
-        )
+        out, _ = compute_scores(df.copy(), ScoreContext("residential", "mechanical", "non-heating"), keep_values=True)
 
     # Only fields with thresholds are scored.
     assert set(out["field"]) == {"temperature_cooling_mec"}

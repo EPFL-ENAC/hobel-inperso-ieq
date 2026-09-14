@@ -1,5 +1,6 @@
 import copy
 import logging
+from typing import Any
 
 import pandas as pd
 
@@ -191,7 +192,7 @@ def compute_temperature_cooling_nat(df_hourly: pd.DataFrame, outdoor_lagged: pd.
     return _apply_natural_cooling_correction(df_hourly, nat_rows)
 
 
-def _get_thresholds(context: ScoreContext) -> dict[str, dict[str, float]]:
+def _get_thresholds(context: ScoreContext) -> dict[str, dict[str, Any]]:
     """Get the thresholds for the given context.
 
     Fills in missing categories with values from default context.
