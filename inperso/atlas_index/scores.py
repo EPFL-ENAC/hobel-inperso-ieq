@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import pandas as pd
@@ -47,9 +48,32 @@ def compute_scores_inperso(df: pd.DataFrame, write_to_db: bool = False, keep_val
     return df
 
 
+def _select_light_fields(df: pd.DataFrame, context: ScoreContext) -> pd.DataFrame:
+    """Keep the light rows that match the context building type.
+
+    School contexts score raw illuminance (lux) with the school light
+    thresholds, so percent-of-time light rows are dropped. Residential
+    contexts score percent-of-time light rows, which are produced by
+    preprocessing from the raw lux data, so raw lux rows are dropped.
+    """
+    light_fields = {"light", "light_percent_day", "light_percent_night"}
+    present = light_fields & set(df["field"])
+    if not present:
+        return df
+
+    if context.building_type == "school":
+        drop = present - {"light"}
+    else:
+        drop = present - {"light_percent_day", "light_percent_night"}
+    if not drop:
+        return df
+    return df[~df["field"].isin(drop)]
+
+
 def _compute_scores(
     df: pd.DataFrame, context: ScoreContext, write_to_db: bool = False, keep_values: bool = False
 ) -> pd.DataFrame:
+    df = _select_light_fields(df, context)
     df = compute_scores_per_measurement(df, context)
 
     columns = ["time", "field", "unit_number"]
@@ -172,10 +196,13 @@ def _get_thresholds(context: ScoreContext) -> dict[str, dict[str, float]]:
 
     Fills in missing categories with values from default context.
     """
-    thresholds = config.atlas_index["thresholds"][default_score_context.building_type]
+    thresholds = copy.deepcopy(config.atlas_index["thresholds"][default_score_context.building_type])
 
     for field, params in config.atlas_index["thresholds"][context.building_type].items():
-        thresholds[field].update(params)
+        if field in thresholds:
+            thresholds[field].update(params)
+        else:
+            thresholds[field] = params
 
     return thresholds
 
@@ -188,6 +215,13 @@ def compute_scores_per_measurement(df: pd.DataFrame, context: ScoreContext) -> p
         function_type = params["type"]
         build_fn = function_type_map[function_type]
         score_functions[field] = build_fn(**params)
+
+    # Only score fields that have threshold parameters. Fields without
+    # thresholds (e.g. raw measurements that no threshold covers) are dropped.
+    no_threshold_fields = sorted(set(df["field"]) - set(score_functions))
+    if no_threshold_fields:
+        logging.warning(f"No thresholds found for the fields: {no_threshold_fields}. Dropping the rows.")
+        df = df[~df["field"].isin(no_threshold_fields)]
 
     df["score"] = df.apply(
         lambda row: score_functions[row["field"]](row["value"]),

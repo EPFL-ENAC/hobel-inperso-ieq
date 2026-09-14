@@ -102,20 +102,38 @@ def compute_index(
     fields_per_category = config.atlas_index["index_fields"]
     category_per_field = {field: category for category, fields in fields_per_category.items() for field in fields}
     scores["category"] = scores["field"].map(category_per_field)
+
+    # Fields without an index category (e.g. fields that are scored but not
+    # part of any index) are not used in the index computation.
+    scores = scores.dropna(subset=["category"])
     indices = scores.groupby(["time", "unit_number", "category"], as_index=False)["score"].mean()
     indices = indices.pivot(index=["time", "unit_number"], columns="category", values="score").reset_index()
 
     weights = config.atlas_index["weights"]
     indices["atlas_index"] = indices.apply(
-        lambda row: sum(row[category] * weights[category] for category in weights.keys()), axis=1
+        lambda row: weighted_atlas_index(row, weights, indices.columns), axis=1
     )
-    for category in list(weights.keys()) + ["atlas_index"]:
+    available_categories = {category for category in weights if category in indices.columns}
+    for category in list(available_categories) + ["atlas_index"]:
         indices[category] = np.exp(indices[category])
 
     if write_to_db:
         write_indices(indices)
 
     return indices
+
+
+def weighted_atlas_index(row, weights: dict[str, float], columns) -> float:
+    """Weighted mean of the category scores in the row.
+
+    Categories without data are skipped and the weights are
+    renormalized over the available categories.
+    """
+    available = [category for category in weights if category in columns and not pd.isna(row[category])]
+    if not available:
+        return np.nan
+    total_weight = sum(weights[category] for category in available)
+    return sum(row[category] * weights[category] for category in available) / total_weight
 
 
 def write_indices(df: pd.DataFrame) -> None:

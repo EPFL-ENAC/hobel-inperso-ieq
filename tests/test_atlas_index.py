@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import pytest
 
@@ -194,3 +196,128 @@ def test_compute_scores():
     # Rows are aggregated per (time, field, unit_number).
     assert "unit_number" in out.columns
     assert fallback_note is None
+
+
+def test_compute_scores_drops_fields_without_thresholds(caplog):
+    """Fields without threshold parameters are dropped, not scored."""
+    import logging
+
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [
+            ("2026-07-15 12:00:00", "temperature", 25.0, ""),
+            ("2026-07-15 12:00:00", "unknown_field", 42.0, ""),
+        ],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    with caplog.at_level(logging.WARNING):
+        out, _ = compute_scores(
+            df.copy(), ScoreContext("residential", "mechanical", "non-heating"), keep_values=True
+        )
+
+    # Only fields with thresholds are scored.
+    assert set(out["field"]) == {"temperature_cooling_mec"}
+
+
+def test_light_fields_selected_by_context():
+    """School keeps raw light and drops percent rows; residential is the reverse."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import _select_light_fields
+
+    rows = [
+        ("2026-07-15 10:00:00", "light", 800.0, ""),
+        ("2026-07-15 11:00:00", "light_percent_day", 60.0, ""),
+        ("2026-07-15 23:00:00", "light_percent_night", 10.0, ""),
+        ("2026-07-15 12:00:00", "co2", 700.0, ""),
+    ]
+    df = pd.DataFrame(rows, columns=["time", "field", "value", "device"])
+
+    school = _select_light_fields(df.copy(), ScoreContext("school", "natural", "heating"))
+    assert set(school["field"]) == {"light", "co2"}
+
+    residential = _select_light_fields(df.copy(), ScoreContext("residential", "natural", "heating"))
+    assert set(residential["field"]) == {"light_percent_day", "light_percent_night", "co2"}
+
+
+def test_school_light_scored_with_lux_thresholds():
+    """School raw light rows are scored with the light thresholds (lux)."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [("2026-07-15 10:00:00", "light", 1000.0, "")],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    out, _ = compute_scores(df.copy(), ScoreContext("school", "natural", "heating"), keep_values=True)
+
+    # 1000 lux is the score-100 boundary for schools.
+    assert set(out["field"]) == {"light"}
+    assert out["score"].iloc[0] == 100
+
+
+def test_get_thresholds_does_not_mutate_config():
+    """Thresholds for non-default contexts do not leak into the loaded config."""
+    from inperso import config
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import _get_thresholds
+
+    mid_school = config.atlas_index["thresholds"]["school"]["co2"]["mid_score"]
+    mid_residential = config.atlas_index["thresholds"]["residential"]["co2"]["mid_score"]
+
+    _get_thresholds(ScoreContext("school", "natural", "heating"))
+
+    assert config.atlas_index["thresholds"]["school"]["co2"]["mid_score"] == mid_school
+    assert config.atlas_index["thresholds"]["residential"]["co2"]["mid_score"] == mid_residential
+
+
+def test_school_score_uses_school_thresholds():
+    """School context scores use the school threshold values."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [("2026-07-15 10:00:00", "co2", 1000.0, "")],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    out, _ = compute_scores(df.copy(), ScoreContext("school", "natural", "heating"), keep_values=True)
+
+    # 1000 ppm is the school score-50 boundary for co2.
+    assert out["score"].iloc[0] == 50
+
+
+def test_weighted_atlas_index_renormalizes():
+    """Missing categories are skipped and weights are renormalized."""
+    from inperso.atlas_index.index import weighted_atlas_index
+
+    weights = {"iaq": 0.25, "thermal": 0.25, "lux": 0.25, "noise": 0.25}
+
+    row = {"iaq": 4.0, "lux": 2.0, "noise": 2.0}
+    result = weighted_atlas_index(row, weights, ["iaq", "lux", "noise"])
+
+    # (4 * 0.25 + 2 * 0.25 + 2 * 0.25) / (0.25 + 0.25 + 0.25) = 8/3
+    assert result == pytest.approx(8.0 / 3.0)
+
+    # All categories present: plain weighted mean.
+    row_full = {"iaq": 1.0, "thermal": 1.0, "lux": 1.0, "noise": 1.0}
+    assert weighted_atlas_index(row_full, weights, ["iaq", "thermal", "lux", "noise"]) == 1.0
+
+    # No categories with data: NaN.
+    assert pytest.approx(float("nan")) != weighted_atlas_index({}, weights, [])
+
+
+def test_index_fields_cover_new_fields():
+    """rn, reverberation_time and light are mapped to index categories."""
+    from inperso.config import atlas_index
+
+    fields_per_category = atlas_index["index_fields"]
+
+    for field, category in [("rn", "iaq"), ("reverberation_time", "noise"), ("light", "lux")]:
+        assert field in fields_per_category[category], f"{field} must be in {category}"

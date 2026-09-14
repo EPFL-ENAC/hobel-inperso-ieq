@@ -290,6 +290,7 @@ atlas_index:
       - no2
       - so2
       - co
+      - rn
     thermal:
       - temperature_heating
       - temperature_cooling_nat
@@ -297,9 +298,11 @@ atlas_index:
     lux:
       - light_percent_day
       - light_percent_night
+      - light
     noise:
       - sla_day
       - sla_night
+      - reverberation_time
 
   weights:
     iaq: 0.196335
