@@ -173,7 +173,7 @@ atlas_index:
         high_score: 1
         mid_score: 4
         low_score: 7
-        unit: µg/m3
+        unit: mg/m3
       temperature_cooling_nat:
         type: range
         high_score_lower: 15.8
@@ -225,18 +225,60 @@ atlas_index:
         low_score: 40
         unit: dB(A)
     school:
-      light_percent_day:
-        type: greater
-        unit: "%"
-        high_score: 60
-        mid_score: 35
-        low_score: 10
-      light_percent_night:
+      co2:
         type: smaller
-        high_score: 0
-        mid_score: 45
-        low_score: 90
-
+        high_score: 800
+        mid_score: 1000
+        low_score: 1200
+        unit: ppm
+      pm25:
+        type: smaller
+        high_score: 5
+        mid_score: 15
+        low_score: 25
+        unit: µg/m3
+      pm10:
+        type: smaller
+        high_score: 15
+        mid_score: 30
+        low_score: 50
+        unit: µg/m3
+      no2:
+        type: smaller
+        high_score: 10
+        mid_score: 20
+        low_score: 30
+        unit: µg/m3
+      rn:
+        type: smaller
+        high_score: 100
+        mid_score: 200
+        low_score: 300
+        unit: Bq/m3
+      reverberation_time:
+        type: smaller
+        high_score: 0.6
+        mid_score: 0.8
+        low_score: 1.0
+        unit: s
+      sla_day:
+        type: smaller
+        high_score: 30
+        mid_score: 34
+        low_score: 38
+        unit: dB(A)
+      sla_night:
+        type: smaller
+        high_score: 30
+        mid_score: 34
+        low_score: 38
+        unit: dB(A)
+      light:
+        type: greater
+        high_score: 1000
+        mid_score: 750
+        low_score: 500
+        unit: lux
   index_fields:
     iaq:
       - co2
