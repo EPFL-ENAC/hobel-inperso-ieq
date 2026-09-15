@@ -251,6 +251,120 @@ def test_school_light_scored_with_lux_thresholds():
     assert out["score"].iloc[0] == 100
 
 
+def test_school_light_kept_only_in_occupancy_hours():
+    """Without occupancy data, school light rows are kept only between the occupancy hours."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [
+            ("2026-07-15 08:00:00", "light", 1000.0, ""),
+            ("2026-07-15 10:00:00", "light", 1000.0, ""),
+            ("2026-07-15 19:00:00", "light", 1000.0, ""),
+        ],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    out, _ = compute_scores(df.copy(), ScoreContext("school", "natural", "heating"), keep_values=True)
+
+    # Light rows are scored only between occupancy_start_hour (8) and occupancy_end_hour (18).
+    assert sorted(out["time"].dt.hour) == [8, 10]
+
+
+def test_school_light_uses_occupancy_data():
+    """Occupancy data replaces the occupancy hours for the school light scores."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [
+            ("2026-07-15 10:00:00", "light", 1000.0, ""),  # occupancy 0: dropped
+            ("2026-07-15 19:00:00", "light", 1000.0, ""),  # occupancy true: kept outside the hours
+            ("2026-07-15 21:00:00", "light", 1000.0, ""),  # no occupancy data: dropped
+            ("2026-07-15 10:00:00", "occupancy", 0.0, ""),
+            ("2026-07-15 19:00:00", "occupancy", True, ""),
+        ],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    out, _ = compute_scores(df.copy(), ScoreContext("school", "natural", "heating"), keep_values=True)
+
+    # The occupancy value decides per time and unit number. The occupancy rows are not scored.
+    assert set(out["field"]) == {"light"}
+    assert out["time"].dt.hour.tolist() == [19]
+
+
+def test_residential_light_not_filtered_by_occupancy():
+    """Residential light scores are percent-of-time values and ignore occupancy."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [
+            ("2026-07-15 10:00:00", "light_percent_day", 60.0, ""),
+            ("2026-07-15 19:00:00", "light_percent_night", 10.0, ""),
+            ("2026-07-15 10:00:00", "occupancy", 0.0, ""),
+        ],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    out, _ = compute_scores(df.copy(), ScoreContext("residential", "mechanical", "non-heating"), keep_values=True)
+
+    # The percent-of-time light rows are scored regardless of the occupancy hours.
+    assert set(out["field"]) == {"light_percent_day", "light_percent_night"}
+
+
+def test_compute_occupancy_normalizes_values():
+    """compute_occupancy replaces the occupancy values with booleans."""
+    from inperso.atlas_index.preprocessing import compute_occupancy, is_occupied
+
+    df = pd.DataFrame([(0,), (25.0,), (True,), ("true",), ("false",)], columns=["value"])
+    df["time"] = "2026-07-15 10:00:00"
+    df["field"] = "occupancy"
+
+    assert compute_occupancy(df)["value"].tolist() == [False, True, True, True, False]
+    assert not is_occupied(float("nan"))
+
+
+def test_occupancy_hours_in_context_override_config():
+    """The context occupancy hours override the configuration values."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [("2026-07-15 19:00:00", "light", 1000.0, "")],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    context = ScoreContext("school", "natural", "heating", occupancy_start_hour=18, occupancy_end_hour=20)
+    out, _ = compute_scores(df.copy(), context, keep_values=True)
+
+    # 19:00 is outside the default hours (8-18) but inside the context hours (18-20).
+    assert out["time"].dt.hour.tolist() == [19]
+
+
+def test_occupancy_hours_in_context_must_be_provided_together():
+    """Only one occupancy hour in the context is incomplete and raises a ValueError."""
+    import pytest
+
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [("2026-07-15 10:00:00", "light", 1000.0, "")],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    context = ScoreContext("school", "natural", "heating", occupancy_start_hour=18)
+    with pytest.raises(ValueError):
+        compute_scores(df.copy(), context, keep_values=True)
+
+
 def test_get_thresholds_does_not_mutate_config():
     """Thresholds for non-default contexts do not leak into the loaded config."""
     from inperso import config

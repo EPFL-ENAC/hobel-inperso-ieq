@@ -9,6 +9,8 @@ class ScoreContext:
     heating_season: Literal["heating", "non-heating", "mixed"]
     heating_season_start: str | None = None
     heating_season_end: str | None = None
+    occupancy_start_hour: int | None = None
+    occupancy_end_hour: int | None = None
 
 
 default_score_context = ScoreContext(

@@ -69,6 +69,10 @@ atlas_index:
     night_start_hour: 22
     night_threshold: 100
 
+  light:
+    occupancy_start_hour: 8
+    occupancy_end_hour: 18
+
   sla:
     day_start_hour: 8
     night_start_hour: 22

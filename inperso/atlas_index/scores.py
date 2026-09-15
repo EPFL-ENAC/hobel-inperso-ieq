@@ -6,6 +6,7 @@ import pandas as pd
 
 from inperso import config
 from inperso.atlas_index.models import ScoreContext, default_score_context
+from inperso.atlas_index.preprocessing import is_occupied
 from inperso.database.write import write
 from inperso.tags import dcs, unit_numbers
 
@@ -71,9 +72,51 @@ def _select_light_fields(df: pd.DataFrame, context: ScoreContext) -> pd.DataFram
     return df[~df["field"].isin(drop)]
 
 
+def _filter_occupied_light(df: pd.DataFrame, context: ScoreContext) -> pd.DataFrame:
+    """Keep the school light rows that fall in occupied periods.
+
+    The occupancy field decides the occupied periods when provided: a light
+    row is kept only when the occupancy value of the same time and unit
+    number is greater than 0 or true. Without occupancy data, the light rows
+    are kept for the hours between the context occupancy_start_hour and
+    occupancy_end_hour, which default to the configuration values. The
+    occupancy rows are not scored and are dropped.
+    """
+    occupancy = df[df["field"] == "occupancy"]
+    df = df[df["field"] != "occupancy"]
+    is_light = df["field"] == "light"
+
+    if context.building_type != "school" or not is_light.any():
+        return df
+
+    light = df[is_light]
+    if not occupancy.empty:
+        occupied = occupancy[["time", "unit_number", "value"]].copy()
+        occupied["occupied"] = occupied["value"].apply(is_occupied)
+        occupied = occupied.groupby(["time", "unit_number"], as_index=False)["occupied"].any()
+        light = light.merge(occupied, on=["time", "unit_number"], how="left")
+        light = light[light["occupied"].fillna(False)]
+        light = light.drop(columns=["occupied"])
+    else:
+        if (context.occupancy_start_hour is None) != (context.occupancy_end_hour is None):
+            raise ValueError("Occupancy start and end hours must be provided together.")
+
+        config_light = config.atlas_index["light"]
+        start_hour = config_light["occupancy_start_hour"]
+        end_hour = config_light["occupancy_end_hour"]
+        if context.occupancy_start_hour is not None:
+            start_hour = context.occupancy_start_hour
+            end_hour = context.occupancy_end_hour
+        hour = light["time"].dt.hour
+        light = light[(hour >= start_hour) & (hour < end_hour)]
+
+    return pd.concat([df[~is_light], light], ignore_index=True)
+
+
 def _compute_scores(
     df: pd.DataFrame, context: ScoreContext, write_to_db: bool = False, keep_values: bool = False
 ) -> pd.DataFrame:
+    df = _filter_occupied_light(df, context)
     df = _select_light_fields(df, context)
     df = compute_scores_per_measurement(df, context)
 

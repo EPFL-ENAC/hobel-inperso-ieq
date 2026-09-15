@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 import pandas as pd
 
@@ -23,6 +24,7 @@ def preprocess_measurements(datetime_start: datetime, datetime_end: datetime) ->
 
     df = pd.DataFrame(data)
     df = convert_units(df)
+    df = compute_occupancy(df)
     df = compute_light_percent(datetime_start, datetime_end, df)
     df = compute_sla(df)
 
@@ -38,6 +40,26 @@ def convert_units(df: pd.DataFrame) -> pd.DataFrame:
             df.loc[mask, "value"] = df.loc[mask, "value"] * factor
 
     return df
+
+
+def compute_occupancy(df: pd.DataFrame) -> pd.DataFrame:
+    """Replace the values of the occupancy field with booleans."""
+
+    is_occupancy = df["field"] == "occupancy"
+    df.loc[is_occupancy, "value"] = df.loc[is_occupancy, "value"].apply(is_occupied)
+
+    return df
+
+
+def is_occupied(value: Any) -> bool:
+    """Check that an occupancy value marks the space as occupied.
+
+    The space is occupied when the value is greater than 0 or true.
+    """
+    try:
+        return float(value) > 0
+    except (TypeError, ValueError):
+        return str(value).strip().lower() == "true"
 
 
 def compute_light_percent(datetime_start: datetime, datetime_end: datetime, df: pd.DataFrame) -> pd.DataFrame:

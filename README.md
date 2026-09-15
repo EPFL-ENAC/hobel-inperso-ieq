@@ -152,6 +152,8 @@ context = ScoreContext(
     heating_season = "mixed",        # or "heating", "non-heating"
     heating_season_start = "11/01",  # required when heating_season is "mixed"
     heating_season_end = "03/31",
+    occupancy_start_hour = 8,        # optional, overrides the config default
+    occupancy_end_hour = 18,
 )
 
 df_scores, fallback_note = compute_scores(df, context)
@@ -177,7 +179,8 @@ Expected `field` names, descriptions, and units:
 | `rn` | Radon activity concentration | Bq/m3 |
 | `light_percent_day` | Part of the daytime with light above the light threshold | % |
 | `light_percent_night` | Part of the night with light above the light threshold | % |
-| `light` | Illuminance, scored for school contexts | lux |
+| `light` | Illuminance, scored for school contexts during occupied periods | lux |
+| `occupancy` | Occupancy state, decides the occupied periods for the school light scores | - |
 | `sla_day` | A-weighted sound level during the day | dB(A) |
 | `sla_night` | A-weighted sound level during the night | dB(A) |
 | `reverberation_time` | Reverberation time, scored for school contexts | s |
