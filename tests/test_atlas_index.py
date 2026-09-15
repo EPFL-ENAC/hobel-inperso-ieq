@@ -283,6 +283,24 @@ def test_school_score_uses_school_thresholds():
     assert out["score"].iloc[0] == 50
 
 
+def test_residential_radon_scored_with_residential_thresholds():
+    """Residential context scores rn rows with the residential rn thresholds."""
+    from inperso.atlas_index.models import ScoreContext
+    from inperso.atlas_index.scores import compute_scores
+
+    df = pd.DataFrame(
+        [("2026-07-15 10:00:00", "rn", 150.0, "")],
+        columns=["time", "field", "value", "device"],
+    )
+    df["time"] = pd.to_datetime(df["time"])
+
+    out, _ = compute_scores(df.copy(), ScoreContext("residential", "natural", "heating"), keep_values=True)
+
+    assert set(out["field"]) == {"rn"}
+    # 150 Bq/m3 is midway between the high (100) and mid (200) boundaries.
+    assert out["score"].iloc[0] == pytest.approx(75)
+
+
 def test_weighted_atlas_index_renormalizes():
     """Missing categories are skipped and weights are renormalized."""
     from inperso.atlas_index.index import weighted_atlas_index

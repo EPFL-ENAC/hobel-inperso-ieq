@@ -162,6 +162,12 @@ atlas_index:
         mid_score: 25
         low_score: 40
         unit: µg/m3
+      rn:
+        type: smaller
+        high_score: 100
+        mid_score: 200
+        low_score: 300
+        unit: Bq/m3
       so2:
         type: smaller
         high_score: 13
