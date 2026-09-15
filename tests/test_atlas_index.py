@@ -321,6 +321,46 @@ def test_weighted_atlas_index_renormalizes():
     assert pytest.approx(float("nan")) != weighted_atlas_index({}, weights, [])
 
 
+def test_compute_index_from_scores():
+    """compute_index_from_scores returns the category scores and the weighted atlas index."""
+    import numpy as np
+
+    from inperso.atlas_index.index import compute_index_from_scores
+    from inperso.config import atlas_index
+
+    df_scores = pd.DataFrame(
+        [
+            ("2026-01-15 12:00:00", "co2", "", 100.0),
+            ("2026-01-15 12:00:00", "temperature_heating", "", 80.0),
+            ("2026-01-15 12:00:00", "sla_day", "", 60.0),
+            ("2026-01-15 12:00:00", "pressure", "", 50.0),
+        ],
+        columns=["time", "field", "unit_number", "score"],
+    )
+    df_scores["time"] = pd.to_datetime(df_scores["time"])
+
+    indices = compute_index_from_scores(df_scores)
+
+    # The pressure field is outside the index and is ignored.
+    assert set(indices.columns) == {"time", "unit_number", "iaq", "thermal", "noise", "atlas_index"}
+    assert indices["iaq"].iloc[0] == pytest.approx(100.0)
+    assert indices["thermal"].iloc[0] == pytest.approx(80.0)
+    assert indices["noise"].iloc[0] == pytest.approx(60.0)
+
+    # The index is the weighted geometric mean of the available category scores.
+    weights = atlas_index["weights"]
+    available = {"iaq": 100.0, "thermal": 80.0, "noise": 60.0}
+    total_weight = sum(weights[category] for category in available)
+    expected = np.exp(sum(np.log(score) * weights[category] for category, score in available.items()) / total_weight)
+    assert indices["atlas_index"].iloc[0] == pytest.approx(expected)
+
+    # The input DataFrame is not modified: the scores stay in linear scale.
+    assert df_scores["score"].iloc[0] == pytest.approx(100.0)
+
+    # An empty scores DataFrame returns an empty result.
+    assert compute_index_from_scores(pd.DataFrame()).empty
+
+
 def test_index_fields_cover_new_fields():
     """rn, reverberation_time and light are mapped to index categories."""
     from inperso.config import atlas_index

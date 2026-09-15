@@ -128,6 +128,73 @@ df_index = pd.DataFrame(data_index)    # Optional
 ```
 
 
+### Compute the scores from an existing DataFrame
+
+To compute the ATLAS scores from an existing DataFrame, without fetching from the database, use the `inperso.atlas_index.scores` module. The DataFrame needs the columns `time` (UTC), `brand` (`airly`, `airthings`, or `uhoo`), `device`, `field`, and `value`:
+
+```python
+import pandas as pd
+from inperso.atlas_index.scores import compute_scores_inperso
+
+df = pd.DataFrame(data)  # Or any DataFrame with the expected columns
+
+df_scores = compute_scores_inperso(df, write_to_db=False)
+```
+
+Use `compute_scores` with a `ScoreContext` to choose the building type, cooling type, and heating season:
+
+```python
+from inperso.atlas_index.scores import ScoreContext, compute_scores
+
+context = ScoreContext(
+    building_type = "residential",   # or "school"
+    cooling_type = "natural",        # or "mechanical"
+    heating_season = "mixed",        # or "heating", "non-heating"
+    heating_season_start = "11/01",  # required when heating_season is "mixed"
+    heating_season_end = "03/31",
+)
+
+df_scores, fallback_note = compute_scores(df, context)
+```
+
+Both functions return a DataFrame with the columns `time`, `field`, `unit_number`, and `score`.
+
+Expected `field` names, descriptions, and units:
+
+| Field | Description | Unit |
+| :--- | :--- | :--- |
+| `temperature` | Indoor air temperature | °C |
+| `outdoor_temperature` | Outdoor air temperature, used for the natural cooling adjustment | °C |
+| `co2` | Carbon dioxide concentration | ppm |
+| `humidity` | Relative humidity | % |
+| `pm25` | PM2.5 mass concentration | µg/m3 |
+| `pm10` | PM10 mass concentration | µg/m3 |
+| `o3` | Ozone mass concentration | µg/m3 |
+| `no2` | Nitrogen dioxide mass concentration | µg/m3 |
+| `so2` | Sulfur dioxide mass concentration | µg/m3 |
+| `co` | Carbon monoxide mass concentration | mg/m3 |
+| `ch2o` | Formaldehyde mass concentration | µg/m3 |
+| `rn` | Radon activity concentration | Bq/m3 |
+| `light_percent_day` | Part of the daytime with light above the light threshold | % |
+| `light_percent_night` | Part of the night with light above the light threshold | % |
+| `light` | Illuminance, scored for school contexts | lux |
+| `sla_day` | A-weighted sound level during the day | dB(A) |
+| `sla_night` | A-weighted sound level during the night | dB(A) |
+| `reverberation_time` | Reverberation time, scored for school contexts | s |
+
+The `value` column must use the units of the table. The `sla_day`, `sla_night`, `light_percent_day`, and `light_percent_night` fields are derived from `sla` and `light` data by the preprocessing functions of `inperso.atlas_index.preprocessing`.
+
+To compute the ATLAS index from the scores, use the `inperso.atlas_index.index` module:
+
+```python
+from inperso.atlas_index.index import compute_index_from_scores
+
+df_index = compute_index_from_scores(df_scores)
+```
+
+`df_scores` needs the columns `time`, `field`, `unit_number`, and `score`. The result contains `time`, `unit_number`, the category scores (`iaq`, `thermal`, `lux`, `noise`), and the `atlas_index`, the weighted geometric mean of the available category scores. Categories without data are skipped and the weights are renormalized.
+
+
 ## Command line usage
 
 To retrieve all the latest samples for all sensors and surveys and store them in the database, run in your terminal:

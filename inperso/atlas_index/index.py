@@ -97,6 +97,25 @@ def compute_index(
         return pd.DataFrame()
 
     scores = compute_scores_inperso(measurements, write_to_db=write_to_db, keep_values=keep_values)
+    indices = compute_index_from_scores(scores)
+
+    if write_to_db:
+        write_indices(indices)
+
+    return indices
+
+
+def compute_index_from_scores(scores: pd.DataFrame) -> pd.DataFrame:
+    """Compute the ATLAS index from the scores DataFrame of `compute_scores` or `compute_scores_inperso`.
+
+    The scores DataFrame must contain the columns "time", "field", "unit_number", and "score".
+    Returns a DataFrame with the columns "time", "unit_number", the category scores, and "atlas_index".
+    """
+
+    if scores.empty:
+        return pd.DataFrame()
+
+    scores = scores.copy()
     scores["score"] = np.log(scores["score"])
 
     fields_per_category = config.atlas_index["index_fields"]
@@ -114,9 +133,6 @@ def compute_index(
     available_categories = {category for category in weights if category in indices.columns}
     for category in list(available_categories) + ["atlas_index"]:
         indices[category] = np.exp(indices[category])
-
-    if write_to_db:
-        write_indices(indices)
 
     return indices
 
