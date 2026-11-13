@@ -285,9 +285,9 @@ atlas_index:
         unit: dB(A)
       light:
         type: greater
-        high_score: 1000
-        mid_score: 750
-        low_score: 500
+        high_score: 500
+        mid_score: 300
+        low_score: 200
         unit: lux
   index_fields:
     iaq:

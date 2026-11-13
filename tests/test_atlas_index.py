@@ -246,7 +246,7 @@ def test_school_light_scored_with_lux_thresholds():
 
     out, _ = compute_scores(df.copy(), ScoreContext("school", "natural", "heating"), keep_values=True)
 
-    # 1000 lux is the score-100 boundary for schools.
+    # 1000 lux is above the score-100 boundary of 500 lux for schools.
     assert set(out["field"]) == {"light"}
     assert out["score"].iloc[0] == 100
 
